@@ -1,0 +1,14 @@
+//
+// Created by bruno on 3/6/24.
+//
+
+#ifndef DA_WATERSUPPLYMANAGEMENT_GRAPH_H
+#define DA_WATERSUPPLYMANAGEMENT_GRAPH_H
+
+
+class Graph {
+
+};
+
+
+#endif //DA_WATERSUPPLYMANAGEMENT_GRAPH_H

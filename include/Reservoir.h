@@ -1,0 +1,14 @@
+//
+// Created by bruno on 3/6/24.
+//
+
+#ifndef DA_WATERSUPPLYMANAGEMENT_RESERVOIR_H
+#define DA_WATERSUPPLYMANAGEMENT_RESERVOIR_H
+
+
+class Reservoir {
+
+};
+
+
+#endif //DA_WATERSUPPLYMANAGEMENT_RESERVOIR_H

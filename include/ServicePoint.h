@@ -1,0 +1,14 @@
+//
+// Created by bruno on 3/6/24.
+//
+
+#ifndef DA_WATERSUPPLYMANAGEMENT_SERVICEPOINT_H
+#define DA_WATERSUPPLYMANAGEMENT_SERVICEPOINT_H
+
+
+class ServicePoint {
+
+};
+
+
+#endif //DA_WATERSUPPLYMANAGEMENT_SERVICEPOINT_H
