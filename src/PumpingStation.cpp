@@ -1,5 +1,3 @@
-//
-// Created by bruno on 3/6/24.
-//
-
 #include "PumpingStation.h"
+
+PumpingStation::PumpingStation(int id, const std::string &code) : ServicePoint(id, code) {}

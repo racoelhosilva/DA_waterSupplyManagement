@@ -1,13 +1,14 @@
-//
-// Created by bruno on 3/6/24.
-//
-
 #ifndef DA_WATERSUPPLYMANAGEMENT_PUMPINGSTATION_H
 #define DA_WATERSUPPLYMANAGEMENT_PUMPINGSTATION_H
 
+#include "ServicePoint.h"
+#include <string>
 
-class PumpingStation {
+class ServicePoint;
 
+class PumpingStation : public ServicePoint {
+public:
+    PumpingStation(int id, const std::string &code);
 };
 
 

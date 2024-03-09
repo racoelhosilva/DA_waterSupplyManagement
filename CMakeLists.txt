@@ -8,11 +8,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 add_executable(DA_waterSupplyManagement main.cpp
-        src/Graph.cpp
         include/Graph.h
-        src/Vertex.cpp
         include/Vertex.h
-        src/Edge.cpp
         include/Edge.h
         src/WaterSupplyNetwork.cpp
         include/WaterSupplyNetwork.h
@@ -25,6 +22,10 @@ add_executable(DA_waterSupplyManagement main.cpp
         src/PumpingStation.cpp
         include/PumpingStation.h
         src/DeliverySite.cpp
-        include/DeliverySite.h)
+        include/DeliverySite.h
+        src/Interface.cpp
+        include/Interface.h
+        include/input.h
+        src/input.cpp)
 
 add_subdirectory(docs)

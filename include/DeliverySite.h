@@ -1,13 +1,21 @@
-//
-// Created by bruno on 3/6/24.
-//
-
 #ifndef DA_WATERSUPPLYMANAGEMENT_DELIVERYSITE_H
 #define DA_WATERSUPPLYMANAGEMENT_DELIVERYSITE_H
 
 
-class DeliverySite {
+#include "ServicePoint.h"
 
+class DeliverySite : public ServicePoint {
+public:
+    DeliverySite(const std::string &city, int id, const std::string &code, double demand, int population);
+
+    const std::string &getCity() const;
+    double getDemand() const;
+    int getPopulation() const;
+
+private:
+    std::string city;
+    double demand;
+    int population;
 };
 
 
