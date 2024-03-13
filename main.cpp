@@ -5,5 +5,6 @@ int main() {
     if (!interface.init()){
         return 1;
     }
+    interface.mainMenu();
     return 0;
 }
