@@ -11,73 +11,41 @@ bool Interface::init(){
     return true;
 }
 
-void Interface::printLine(const std::string &s){
-    std::cout << "│" << std::setw(width) << std::left << s << "│" << '\n';
-}
-
-
 void Interface::printOptions(const std::vector<std::string> &options, int choice) {
-    std::ostringstream oss;
-    oss << "     " << options[options.size()-1];
-    printLine(oss.str());
-    oss.str(std::to_string(choice));
-    printLine(oss.str());
+    std::cout << "│" << std::string(4, ' ') << std::setw(74) << std::left << options[options.size()-1] << "│" << '\n';
+
     for (int idx = 1; idx < options.size() - 1; idx++){
-        if (idx == choice){
-            std::cout << BOLD;
+        if (choice == idx){
+            std::cout << "│" << BOLD << GREEN << " [" << idx << "] " << RESET << BOLD << std::setw(73) << std::left << options[idx] << RESET << "│" << '\n';
         }
-        oss.str("");
-        oss << " [" << idx << "] " << options[idx];
-        printLine(oss.str());
-        if (idx == choice){
-            std::cout << RESET;
+        else {
+            std::cout << "│" << GREEN << " [" << idx << "] " << RESET << FAINT << std::setw(73) << std::left << options[idx] << RESET << "│" << '\n';
         }
     }
-    if (0 == choice){
-        std::cout << BOLD;
+    if (choice == 0){
+        std::cout << "│" << BOLD << RED << " [0] " << RESET << BOLD << std::setw(73) << std::left << options[0] << RESET "│" << '\n';
     }
-    oss.str("");
-    oss << " [0] " << options[0];
-    printLine(oss.str());
-    if (0 == choice){
-        std::cout << RESET;
+    else {
+        std::cout << "│" << RED << " [0] " << RESET << FAINT << std::setw(73) << std::left << options[0] << RESET << "│" << '\n';
     }
 }
 
 void Interface::printTop() {
     std::string s;
-    for (int _ = 0; _ < width; _++){
+    for (int _ = 0; _ < 78; _++){
         s += "─";
     }
     std::cout << "┌" << s << "┐" << '\n';
     std::string title = "Water Supply Management (G15_02)";
-    std::cout << "│" << std::string(24, ' ') << BLUE << BOLD << title << RESET << std::string(24, ' ') << "│" << '\n';
+    std::cout << "│" << std::string(23, ' ') << BLUE << BOLD << title << RESET << std::string(23, ' ') << "│" << '\n';
 }
 
 void Interface::printBottom() {
     std::string s;
-    for (int _ = 0; _ < width; _++){
+    for (int _ = 0; _ < 78; _++){
         s += "─";
     }
     std::cout << "└" << s << "┘" << '\n';
-}
-
-
-bool Interface::validOption(unsigned long size, const std::string &choice) {
-    return choice.size() == 1 && "0" <= choice && choice <= std::to_string(size-2);
-}
-
-int Interface::readOption(int max) {
-    std::string choice;
-    do {
-        std::ostringstream oss;
-        oss << "  Option" << ": ";
-        printLine(oss.str());
-        std::cin.clear();
-        std::cin >> choice;
-        std::cin.ignore();
-    } while (!validOption(max, choice));
-    return stoi(choice);
 }
 
 void Interface::mainMenu() {
@@ -94,9 +62,10 @@ void Interface::mainMenu() {
              "Choose your operation:"};
 
 
-    int choice = 0;
+    int choice = 1;
     Press press;
     do {
+        std::cout << RESET << CLEAR_SCREEN << MOVE_CURSOR(0,0) << RESET;
         printTop();
         printOptions(options, choice);
         printBottom();

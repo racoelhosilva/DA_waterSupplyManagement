@@ -45,5 +45,20 @@
 #define MOVE_LEFT        "\033[D"
 
 
+// Erase Characters
+#define CLEAR_SCREEN        "\033[2J" // Clear entire screen
+#define CLEAR_TO_START      "\033[1J" // Clear from cursor to beginning of screen
+#define CLEAR_TO_END        "\033[0J" // Clear from cursor to end of screen
+#define CLEAR_LINE          "\033[K"  // Clear from cursor to end of line
+#define CLEAR_LINE_START    "\033[1K" // Clear from cursor to beginning of line
+#define CLEAR_LINE_FULL     "\033[2K" // Clear entire line
+
+// Move Cursor
+#define MOVE_CURSOR(row,col) "\033[" #row ";" #col "H" // Move cursor to specific position (row, col)
+#define MOVE_CURSOR_UP(n)    "\033[" #n "A"            // Move cursor up by n lines
+#define MOVE_CURSOR_DOWN(n)  "\033[" #n "B"            // Move cursor down by n lines
+#define MOVE_CURSOR_RIGHT(n) "\033[" #n "C"            // Move cursor right by n columns
+#define MOVE_CURSOR_LEFT(n)  "\033[" #n "D"            // Move cursor left by n columns
+
 
 #endif //DA_WATERSUPPLYMANAGEMENT_ANSI_H
