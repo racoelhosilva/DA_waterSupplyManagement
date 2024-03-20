@@ -9,7 +9,7 @@ public:
     bool init();
 
     void printLine(const std::string &s);
-    void printOptions(const std::vector<std::string> &options);
+    void printOptions(const std::vector<std::string> &options, int choice);
     void printOption();
     void printTop();
     void printBottom();

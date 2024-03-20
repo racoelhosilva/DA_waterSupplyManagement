@@ -16,18 +16,32 @@ void Interface::printLine(const std::string &s){
 }
 
 
-void Interface::printOptions(const std::vector<std::string> &options) {
+void Interface::printOptions(const std::vector<std::string> &options, int choice) {
     std::ostringstream oss;
     oss << "     " << options[options.size()-1];
     printLine(oss.str());
+    oss.str(std::to_string(choice));
+    printLine(oss.str());
     for (int idx = 1; idx < options.size() - 1; idx++){
+        if (idx == choice){
+            std::cout << BOLD;
+        }
         oss.str("");
         oss << " [" << idx << "] " << options[idx];
         printLine(oss.str());
+        if (idx == choice){
+            std::cout << RESET;
+        }
+    }
+    if (0 == choice){
+        std::cout << BOLD;
     }
     oss.str("");
     oss << " [0] " << options[0];
     printLine(oss.str());
+    if (0 == choice){
+        std::cout << RESET;
+    }
 }
 
 void Interface::printTop() {
@@ -69,7 +83,6 @@ int Interface::readOption(int max) {
 void Interface::mainMenu() {
     std::cout << "\033[?25l" ;
     initCapture();
-    printTop();
     std::vector<std::string> options =
             {"Quit",
              "Function 1",
@@ -79,13 +92,14 @@ void Interface::mainMenu() {
              "Function 5",
              "Function 6",
              "Choose your operation:"};
-    printOptions(options);
-    printBottom();
+
 
     int choice = 0;
     Press press;
     do {
-        std::cout << "\033[8m" << "\x1b[2K" << "\r" << "   Option: " << choice << RESET;
+        printTop();
+        printOptions(options, choice);
+        printBottom();
         press = getNextPress();
         if (press == UP) {choice -= 1; choice += (options.size()-1);}
         else if (press == DOWN) {choice += 1;}
