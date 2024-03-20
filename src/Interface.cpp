@@ -1,5 +1,6 @@
 #include "Interface.h"
 #include "input.h"
+#include "ansi.h"
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -19,7 +20,7 @@ void Interface::printOptions(const std::vector<std::string> &options) {
     std::ostringstream oss;
     oss << "     " << options[options.size()-1];
     printLine(oss.str());
-    for (int idx = 1; idx < options.size() - 1; idx++ ){
+    for (int idx = 1; idx < options.size() - 1; idx++){
         oss.str("");
         oss << " [" << idx << "] " << options[idx];
         printLine(oss.str());
@@ -35,11 +36,8 @@ void Interface::printTop() {
         s += "─";
     }
     std::cout << "┌" << s << "┐" << '\n';
-    std::ostringstream oss;
-    oss << "                        " << "Water Supply Management (G15_02)";
-    printLine(oss.str());
-    oss.str("");
-    printLine(oss.str());
+    std::string title = "Water Supply Management (G15_02)";
+    std::cout << "│" << std::string(24, ' ') << BLUE << BOLD << title << RESET << std::string(24, ' ') << "│" << '\n';
 }
 
 void Interface::printBottom() {
@@ -84,11 +82,10 @@ void Interface::mainMenu() {
     printOptions(options);
     printBottom();
 
-    //int choice = readOption(int(options.size()));
     int choice = 0;
     Press press;
     do {
-        std::cout << "\033[8m" << "\x1b[2K" << "\r" << "   Option: " << choice;
+        std::cout << "\033[8m" << "\x1b[2K" << "\r" << "   Option: " << choice << RESET;
         press = getNextPress();
         if (press == UP) {choice -= 1; choice += (options.size()-1);}
         else if (press == DOWN) {choice += 1;}
@@ -103,7 +100,7 @@ void Interface::mainMenu() {
         case 4:
         case 5:
         case 6:
-            std::cout << "Choice " << choice << " selected\n";
+            std::cout << "\nChoice " << choice << " selected\n";
             break;
         case 0:
             exitMenu();
