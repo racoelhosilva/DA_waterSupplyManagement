@@ -13,7 +13,6 @@ public:
     WaterSupplyNetwork();
     bool parseData(const std::string& reservoirPath, const std::string& stationsPath, const std::string& citiesPath, const std::string& pipesPath);
 
-    void print();
 
     std::vector<ServicePoint*> getServicePoints();
     std::vector<Reservoir*> getReservoirs();

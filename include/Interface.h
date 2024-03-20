@@ -8,15 +8,19 @@ public:
 
     bool init();
 
-    static void printOptions(const std::vector<std::string> &options);
+    void printLine(const std::string &s);
+    void printOptions(const std::vector<std::string> &options);
+    void printOption();
+    void printTop();
+    void printBottom();
     bool validOption(unsigned long size, const std::string &choice);
     int readOption(int i);
 
     void mainMenu();
+    void exitMenu();
 
 private:
-    unsigned int width = 40;
-    unsigned int height = 12;
+    int width = 80;
     WaterSupplyNetwork wsn;
 };
 
