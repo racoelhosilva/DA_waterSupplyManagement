@@ -44,7 +44,6 @@
 #define MOVE_RIGHT       "\033[C"
 #define MOVE_LEFT        "\033[D"
 
-
 // Erase Characters
 #define CLEAR_SCREEN        "\033[2J" // Clear entire screen
 #define CLEAR_TO_START      "\033[1J" // Clear from cursor to beginning of screen
