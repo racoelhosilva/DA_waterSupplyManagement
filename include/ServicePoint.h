@@ -17,7 +17,7 @@ public:
     std::vector<Pipe*> getIncoming() const;
     Pipe *getPath() const;
 
-    virtual Edge<std::string> *addEdge(Vertex<std::string> *dest, double w);
+    Edge<std::string> *addEdge(Vertex<std::string> *dest, double w) override;
 
 private:
     int id;

@@ -18,4 +18,8 @@ Pipe *Pipe::getReverse() const {
     return dynamic_cast<Pipe*>(Edge::getReverse());
 }
 
+double Pipe::getRemainingFlow() const {
+    return getWeight() - getFlow();
+}
+
 

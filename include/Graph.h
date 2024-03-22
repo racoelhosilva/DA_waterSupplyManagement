@@ -66,7 +66,7 @@ bool Graph<T>::removeVertex(const T &in) {
 
     auto v = *it;
     v->removeOutgoingEdges();
-    for (const Vertex<T>* u: vertexSet)
+    for (Vertex<T>* u: vertexSet)
         u->removeEdge(v->getInfo());
     vertexSet.erase(it);
     delete v;

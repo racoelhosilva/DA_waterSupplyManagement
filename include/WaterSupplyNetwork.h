@@ -19,6 +19,9 @@ public:
     std::vector<Reservoir*> getReservoirs();
     std::vector<PumpingStation*> getPumpingStations();
     std::vector<DeliverySite*> getDeliverySites();
+    ServicePoint* findServicePoint(const std::string &code);
+
+    double getMaxFlow();
 
 private:
     bool parseReservoir(const std::string& reservoirPath);
@@ -28,6 +31,10 @@ private:
 
     template<class T >
     std::vector<T*> filterVerticesByType();
+
+    void edmondsKarp(ServicePoint *source, ServicePoint *sink);
+    void edmondsKarpBfs(ServicePoint* src);
+    void reduceAugmentingPath(ServicePoint *source, ServicePoint* sink);
 };
 
 
