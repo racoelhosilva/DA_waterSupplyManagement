@@ -14,3 +14,10 @@ string Reservoir::getMunicipality() const {
 double Reservoir::getMaxDelivery() const {
     return this->maxDelivery;
 }
+
+double Reservoir::getDelivery() const {
+    double delivery = 0;
+    for (Pipe *pipe: ServicePoint::getAdj())
+        delivery += pipe->getFlow();
+    return delivery;
+}

@@ -21,7 +21,10 @@ public:
     std::vector<DeliverySite*> getDeliverySites();
     ServicePoint* findServicePoint(const std::string &code);
 
-    double getMaxFlow();
+    double getMaxFlow(bool theoretical);
+
+    void unhideAll();
+    void hideAllButOneDeliverySite(const std::string &code);
 
 private:
     bool parseReservoir(const std::string& reservoirPath);

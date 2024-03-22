@@ -2,7 +2,7 @@
 
 using namespace std;
 
-ServicePoint::ServicePoint(int id, const std::string &code) : Vertex<std::string>(code), id(id) {}
+ServicePoint::ServicePoint(int id, const std::string &code) : Vertex<std::string>(code), id(id), hidden(false) {}
 
 int ServicePoint::getId() const{
     return id;
@@ -44,6 +44,14 @@ Edge<std::string> *ServicePoint::addEdge(Vertex<std::string> *dest, double w) {
     adj.push_back(newEdge);
     spDest->incoming.push_back(newEdge);
     return newEdge;
+}
+
+bool ServicePoint::isHidden() const {
+    return hidden;
+}
+
+void ServicePoint::setHidden(bool hidden) {
+    ServicePoint::hidden = hidden;
 }
 
 
