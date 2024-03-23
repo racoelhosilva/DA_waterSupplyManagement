@@ -16,12 +16,11 @@ struct termios old_tio;
 #include <conio.h>
 #define getchr() _getch()
 #define ENTER 13
-#define ISARROW(c) (c == -32)
-#define UP_ARROW 65
-#define DOWN_ARROW 66
-#define DEL 8
+#define ISARROW(c) (c == -32 || c == 0)
+#define UP_ARROW 72
+#define DOWN_ARROW 80
+#define DEL 83
 #endif
-
 
 
 void initCapture() {
@@ -31,6 +30,8 @@ void initCapture() {
     new_tio=old_tio;
     new_tio.c_lflag &=(~ICANON & ~ECHO);
     tcsetattr(STDIN_FILENO,TCSANOW,&new_tio);
+    #else
+    system("chcp 65001 > nul");
     #endif
 }
 
