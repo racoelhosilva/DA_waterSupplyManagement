@@ -31,6 +31,9 @@ public:
     void hidePumpingStation(const std::string &code);
     void hideServicePoint(const std::string &code);
 
+    void hidePipe(Pipe *pipe);
+    void unhidePipe(Pipe *pipe);
+
 private:
     bool parseReservoir(const std::string& reservoirPath);
     bool parseStations(const std::string& stationsPath);

@@ -129,11 +129,10 @@ void Interface::mainMenu() {
              "Cities in Deficit",
              "Test Reservoir Out of Commission",
              "Test Pumping Stations Out of Service",
-             "Function 6",
+             "Test Pipe Failures",
              "Function 7",
              "Function 8",
              "Function 9",
-             "Function 10",
              "Choose your operation:"};
 
     int choice = 1;
@@ -234,7 +233,33 @@ void Interface::mainMenu() {
             waitInput();
             break;
         }
-        case 10:
+        case 6:{
+            if (cityToDefaultFlow.empty()){
+                wsn.getMaxFlow(false);
+                for (DeliverySite *ds : wsn.getDeliverySites()){
+                    cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
+                }
+            }
+
+            ServicePoint *src = servicePointSelection();
+            if (src == nullptr){
+                break;
+            }
+
+            ServicePoint *dest = servicePointSelection(src);
+            if (dest == nullptr){
+                break;
+            }
+
+            Pipe *p = wsn.findPipe(src->getCode(), dest->getCode());
+            wsn.hidePipe(p);
+            double maxFlow = wsn.getMaxFlow(false);
+            displayServicePointEffects();
+            wsn.unhidePipe(p);
+            waitInput();
+            break;
+        }
+        case 9:
             std::cout << readInputText();
             break;
         case 0:
@@ -347,6 +372,75 @@ PumpingStation * Interface::pumpingStationSelection() {
         return nullptr;
     else
         return wsn.findPumpingStation(codes[choice]);
+}
+
+ServicePoint * Interface::servicePointSelection() {
+    initCapture();
+    std::cout << HIDE_CURSOR;
+    std::vector<std::string> options =
+            {"Back"};
+    std::vector<std::string> codes = {""};
+    for (ServicePoint* sp : wsn.getServicePoints()){
+        options.push_back(sp->getCode());
+    }
+    std::string title = "Choose a service point:";
+
+
+    int choice = 1, page = 0, llimit = 1, hlimit = min(11, (int)options.size()), page_limit = ((int)options.size() - 1) / 10;
+    Press press;
+    do {
+        system("cls || clear");
+        printTop();
+        printOptionsCity(options, title, choice, page);
+        printBottom();
+        press = getNextPress();
+
+        if (press == UP) {choice = (choice - 1 - llimit + (hlimit - llimit + 1)) % (hlimit - llimit + 1) + llimit;}
+        else if (press == DOWN) {choice = (choice + 1 - llimit + (hlimit - llimit + 1)) % (hlimit - llimit + 1) + llimit;}
+        else if (press == LEFT) {page = max(page - 1, 0); llimit = choice = page * 10 + 1; hlimit = min(llimit + 10, (int)options.size());}
+        else if (press == RIGHT) {page = min(page + 1, page_limit); llimit = choice = page * 10 + 1; hlimit = min(llimit + 10, (int)options.size());}
+    } while (press != RET);
+
+    endCapture();
+    if (choice == hlimit)
+        return nullptr;
+    else
+        return wsn.findServicePoint(options[choice]);
+}
+
+ServicePoint * Interface::servicePointSelection(ServicePoint *src) {
+    initCapture();
+    std::cout << HIDE_CURSOR;
+    std::vector<std::string> options =
+            {"Back"};
+    std::vector<std::string> codes = {""};
+    for (Pipe *p : src->getAdj()){
+        ServicePoint *sp = p->getDest();
+        options.push_back(sp->getCode());
+    }
+    std::string title = "Choose a service point:";
+
+
+    int choice = 1, page = 0, llimit = 1, hlimit = min(11, (int)options.size()), page_limit = ((int)options.size() - 1) / 10;
+    Press press;
+    do {
+        system("cls || clear");
+        printTop();
+        printOptionsCity(options, title, choice, page);
+        printBottom();
+        press = getNextPress();
+
+        if (press == UP) {choice = (choice - 1 - llimit + (hlimit - llimit + 1)) % (hlimit - llimit + 1) + llimit;}
+        else if (press == DOWN) {choice = (choice + 1 - llimit + (hlimit - llimit + 1)) % (hlimit - llimit + 1) + llimit;}
+        else if (press == LEFT) {page = max(page - 1, 0); llimit = choice = page * 10 + 1; hlimit = min(llimit + 10, (int)options.size());}
+        else if (press == RIGHT) {page = min(page + 1, page_limit); llimit = choice = page * 10 + 1; hlimit = min(llimit + 10, (int)options.size());}
+    } while (press != RET);
+
+    endCapture();
+    if (choice == hlimit)
+        return nullptr;
+    else
+        return wsn.findServicePoint(options[choice]);
 }
 
 std::string Interface::readInputText(){

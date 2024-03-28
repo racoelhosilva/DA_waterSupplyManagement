@@ -341,6 +341,14 @@ void WaterSupplyNetwork::hideServicePoint(const string &code) {
     }
 }
 
+void WaterSupplyNetwork::hidePipe(Pipe *pipe) {
+    pipe->setHidden(true);
+}
+
+void WaterSupplyNetwork::unhidePipe(Pipe *pipe) {
+    pipe->setHidden(false);
+}
+
 
 // TODO: Remove this function
 void WaterSupplyNetwork::print() {

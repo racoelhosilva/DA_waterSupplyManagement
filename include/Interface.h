@@ -20,6 +20,8 @@ public:
     DeliverySite * citySelection();
     Reservoir * reservoirSelection();
     PumpingStation * pumpingStationSelection();
+    ServicePoint * servicePointSelection();
+    ServicePoint * servicePointSelection(ServicePoint *src);
 
     std::string readInputText();
     void printWriteBuffer(const std::string &buffer);
