@@ -181,6 +181,10 @@ ServicePoint *WaterSupplyNetwork::findServicePoint(const std::string &code) {
     return dynamic_cast<ServicePoint*>(findVertex(code));
 }
 
+DeliverySite *WaterSupplyNetwork::findDeliverySite(const std::string &code) {
+    return dynamic_cast<DeliverySite*>(findVertex(code));
+}
+
 double WaterSupplyNetwork::getMaxFlow(bool theoretical) {
     ServicePoint *superSource = new Reservoir("", "", 0, "__super_source__", numeric_limits<double>::infinity()),
         *superSink = new DeliverySite("", 0, "__super_sink__", numeric_limits<double>::infinity(), 0);
@@ -196,7 +200,6 @@ double WaterSupplyNetwork::getMaxFlow(bool theoretical) {
             addEdge(d->getInfo(), superSink->getInfo(), theoretical ? numeric_limits<double>::infinity(): d->getDemand());
     }
 
-    edmondsKarp(superSource, superSink);
     edmondsKarp(superSource, superSink);
 
     double maxFlow = 0;

@@ -19,6 +19,7 @@ public:
     std::vector<PumpingStation*> getPumpingStations();
     std::vector<DeliverySite*> getDeliverySites();
     ServicePoint* findServicePoint(const std::string &code);
+    DeliverySite* findDeliverySite(const std::string &code);
 
     double getMaxFlow(bool theoretical);
 
@@ -37,6 +38,8 @@ private:
     void edmondsKarp(ServicePoint *source, ServicePoint *sink);
     void edmondsKarpBfs(ServicePoint* src);
     void reduceAugmentingPath(ServicePoint *source, ServicePoint* sink);
+
+    void print();
 };
 
 

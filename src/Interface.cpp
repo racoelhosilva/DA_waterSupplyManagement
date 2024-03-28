@@ -3,6 +3,8 @@
 #include "ansi.h"
 #include <iostream>
 #include <iomanip>
+#include <sstream>
+#include <codecvt>
 
 using namespace std;
 
@@ -71,11 +73,21 @@ void Interface::printOptionsCity(const std::vector<std::string> &options, const 
 }
 
 void Interface::printWriteBuffer(const std::string &buffer){
-    std::cout << "│" << std::string(4, ' ') << std::setw(74) << std::left << buffer << RESET << "│" << '\n';
-    std::cout << "│" << std::string(4, ' ') << std::setw(74) << std::left << buffer << RESET << "│" << '\n';
-    std::cout << "│" << std::string(4, ' ') << std::setw(74) << std::left << buffer << RESET << "│" << '\n';
-}
+    std::string s;
+    for (int _ = 0; _ < 68; _++){
+        s += "─";
+    }
 
+    std::cout << "│" << std::string(4, ' ') << "┌" << s << "┐" << std::string(4, ' ') << "│" << '\n';
+    if (buffer.empty()){
+        std::cout << "│" << std::string(4, ' ') << "│" << ' ' << FAINT << std::setw(66) << std::left << "Insert text here:" << RESET << ' ' << "│" << std::string(4, ' ') << "│" << '\n';
+    }
+    else {
+        std::cout << "│" << std::string(4, ' ') << "│" << ' ' << std::setw(66) << std::left << buffer
+        << ' ' << "│" << std::string(4, ' ') << "│" << '\n';
+    }
+    std::cout << "│" << std::string(4, ' ') << "└" << s << "┘" << std::string(4, ' ') << "│" << '\n';
+}
 
 void Interface::printTop() {
     std::string s;
@@ -95,14 +107,26 @@ void Interface::printBottom() {
     std::cout << "└" << s << "┘" << '\n';
 }
 
+void Interface::waitInput() {
+    initCapture();
+    std::cout << HIDE_CURSOR;
+    cout << "Press ENTER to continue\n";
+
+    Press press;
+    do {
+        press = getNextPress();
+    } while  (press != RET);
+    endCapture();
+}
+
 void Interface::mainMenu() {
     initCapture();
     std::cout << HIDE_CURSOR;
     std::vector<std::string> options =
             {"Quit",
-             "Function 1",
-             "Function 2",
-             "Function 3",
+             "Maximum Delivery for All Cities",
+             "Maximum Delivery for Specific City",
+             "Cities in Deficit",
              "Function 4",
              "Function 5",
              "Function 6",
@@ -123,14 +147,33 @@ void Interface::mainMenu() {
 
     endCapture();
     switch (choice) {
-        case 1:
-            citySelection();
+        case 1:{
+            double supersinkFlow = wsn.getMaxFlow(false);
+            cityDisplay(wsn.getDeliverySites());
+            waitInput();
             break;
-        case 2:
+        }
+        case 2:{
+            DeliverySite *city = citySelection();
+            if (city == nullptr){
+                break;
+            }
+            wsn.hideAllButOneDeliverySite(city->getCode());
+            double cityFlow = wsn.getMaxFlow(false);
+            cityDisplay({city});
+            wsn.unhideAll();
+            waitInput();
+            break;
+        }
+        case 3:{
+            double supersinkFlow = wsn.getMaxFlow(false);
+            displaySupplyDemand();
+            waitInput();
+            break;
+        }
+        case 4:
             std::cout << readInputText();
             break;
-        case 3:
-        case 4:
         case 5:
         case 6:
             std::cout << "\nChoice " << choice << " selected\n";
@@ -142,13 +185,15 @@ void Interface::mainMenu() {
     mainMenu();
 }
 
-void Interface::citySelection() {
+DeliverySite * Interface::citySelection() {
     initCapture();
     std::cout << HIDE_CURSOR;
     std::vector<std::string> options =
             {"Back"};
+    std::vector<std::string> codes = {""};
     for (DeliverySite* ds : wsn.getDeliverySites()){
         options.push_back(ds->getCity());
+        codes.push_back(ds->getCode());
     }
     std::string title = "Choose a city:";
 
@@ -170,15 +215,14 @@ void Interface::citySelection() {
 
     endCapture();
     if (choice == hlimit)
-        mainMenu();
+        return nullptr;
     else
-        std::cout << "\nCity " << options[choice] << " selected\n";
-    mainMenu();
+        return wsn.findDeliverySite(codes[choice]);
 }
 
 std::string Interface::readInputText(){
     initCapture();
-    std::cout << SHOW_CURSOR;
+    std::cout << HIDE_CURSOR;
     clearBuffer();
 
     Press press;
@@ -193,8 +237,65 @@ std::string Interface::readInputText(){
     return getBuffer();
 }
 
-void Interface::cityDisplay(const std::vector<DeliverySite> &cities) {
+void printTable(const vector<int> &colLens, const vector<string> &headers, const vector<vector<string>> &cells) {
+    cout << "│    ";
+    for (int i = 0; i < headers.size(); i++)
+        cout << BOLD <<left << setw(colLens[i]) << headers[i] << RESET << ' ';
+    cout << " │\n";
+    for (int i = 0; i < cells.size(); i++) {
+        cout << "│    ";
+        for (int j = 0; j < cells[i].size(); j++)
+            cout << left << setw(colLens[j]) << cells[i][j] << ' ';
+        cout << "│\n";
+    }
+}
 
+string doubleToString(double val, int precision = 5) {
+    if ((int)val == val)
+        return to_string((int)val);
+    ostringstream ss;
+    ss << setprecision(precision) << val;
+    return ss.str();
+}
+
+wstring toWstring(string str) {
+    wstring_convert<codecvt_utf8_utf16<wchar_t>> converter;
+    return converter.from_bytes(str);
+}
+
+void Interface::cityDisplay(const std::vector<DeliverySite *> &cities) {
+    vector<int> colLens = {6, 6, 20, 7, 13, 10};
+    vector<string> headers = {"Code", "Id", "City", "Demand", "Incoming Flow", "Population"};
+    vector<vector<string>> cells(cities.size(), vector<string>());
+    for (int i = 0; i < cities.size(); i++) {
+        const DeliverySite *city = cities[i];
+        cells[i] = {city->getCode(), to_string(city->getId()), city->getCity(), doubleToString(city->getDemand()),
+                    doubleToString(city->getSupplyRate()), to_string(city->getPopulation())};
+    }
+    printTable(colLens, headers, cells);
+}
+
+void Interface::displaySupplyDemand(){
+    vector<int> colLens = {6, 6, 20, 7, 13, 7, 11};
+    vector<string> headers = {"Code", "Id", "City", "Demand", "Incoming Flow", "Deficit", "Deficit (%)"};
+    vector<vector<string>> cells;
+    for (const DeliverySite *ds : wsn.getDeliverySites()) {
+        if (ds->getDemand() > ds->getSupplyRate()) {
+            vector<string> row = {ds->getCode(), to_string(ds->getId()),
+                                  ds->getCity(), doubleToString(ds->getDemand()),
+                                  doubleToString(ds->getSupplyRate()),
+                                  doubleToString(ds->getDemand() - ds->getSupplyRate()),
+                                  doubleToString(((ds->getDemand() - ds->getSupplyRate())/ds->getDemand())*100)};
+            cells.push_back(row);
+        }
+    }
+    if (cells.empty()){
+        cout << "There are no cities in deficit!\n";
+    }
+    else {
+        printTable(colLens, headers, cells);
+        cout << "There are " << cells.size() << " cities in deficit!\n";
+    }
 }
 
 void Interface::exitMenu() {
