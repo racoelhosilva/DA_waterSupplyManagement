@@ -30,7 +30,9 @@ public:
     void cityDisplayComparison(const std::vector<DeliverySite *> &cities);
     void displaySupplyDemand();
     void displayServicePointEffects();
-    void reservoirDisplay(const std::vector<Pipe> &pipe);
+    void reservoirDisplay(const std::vector<Reservoir *> &reservoirs);
+    void pumpingStationDisplay(const std::vector<PumpingStation *> &pumpingStations);
+    void pipeDisplay(const ServicePoint *servicePoint);
 
 private:
     int width = 80;

@@ -13,6 +13,8 @@ public:
     double getSupplyRate() const;
     int getPopulation() const;
 
+    std::string getDescription() const override;
+
 private:
     std::string city;
     double demand;

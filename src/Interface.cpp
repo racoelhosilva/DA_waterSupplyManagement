@@ -461,12 +461,12 @@ std::string Interface::readInputText(){
 }
 
 void printTable(const vector<int> &colLens, const vector<string> &headers, const vector<vector<string>> &cells) {
-    cout << "│    ";
+    cout << BOLD << INVERT << "   ";
     for (int i = 0; i < headers.size(); i++)
-        cout << BOLD <<left << setw(colLens[i]) << headers[i] << RESET << ' ';
-    cout << " │\n";
+        cout << left << setw(colLens[i]) << headers[i] << ' ';
+    cout << "  " << RESET << "\n";
     for (int i = 0; i < cells.size(); i++) {
-        cout << "│    ";
+        cout << "│  ";
         for (int j = 0; j < cells[i].size(); j++)
             cout << left << setw(colLens[j]) << cells[i][j] << ' ';
         cout << "│\n";
@@ -494,6 +494,51 @@ void Interface::cityDisplay(const std::vector<DeliverySite *> &cities) {
         const DeliverySite *city = cities[i];
         cells[i] = {city->getCode(), to_string(city->getId()), city->getCity(), doubleToString(city->getDemand()),
                     doubleToString(city->getSupplyRate()), to_string(city->getPopulation())};
+    }
+    printTable(colLens, headers, cells);
+}
+
+void Interface::reservoirDisplay(const std::vector<Reservoir*> &reservoirs) {
+    vector<int> colLens = {6, 6, 20, 20, 8};
+    vector<string> headers = {"Code", "Id", "Name", "Municipality", "Max Delivery"};
+    vector<vector<string>> cells(reservoirs.size(), vector<string>());
+    for (int i = 0; i < reservoirs.size(); i++) {
+        const Reservoir *reservoir = reservoirs[i];
+        cells[i] = {reservoir->getCode(), doubleToString(reservoir->getId()), reservoir->getName(),
+                    reservoir->getMunicipality(), doubleToString(reservoir->getMaxDelivery())};
+    }
+    printTable(colLens, headers, cells);
+}
+
+void Interface::pumpingStationDisplay(const std::vector<PumpingStation *> &pumpingStations) {
+    vector<int> colLens = {6, 6};
+    vector<string> headers = {"Code", "Id"};
+    vector<vector<string>> cells(pumpingStations.size(), vector<string>());
+    for (int i = 0; i < pumpingStations.size(); i++) {
+        const PumpingStation *pumpingStation = pumpingStations[i];
+        cells[i] = {pumpingStation->getCode(), doubleToString(pumpingStation->getId())};
+    }
+    printTable(colLens, headers, cells);
+}
+
+void Interface::pipeDisplay(const ServicePoint *servicePoint) {
+    cout << "│    Outgoing pipes: ";
+    vector<int> colLens = {20, 13, 8};
+    vector<string> headers = {"Destination", "Bidirectional", "Capacity"};
+    vector<vector<string>> cells(servicePoint->getAdj().size(), vector<string>());
+    for (int i = 0; i < servicePoint->getAdj().size(); i++) {
+        Pipe *pipe = servicePoint->getAdj()[i];
+        cells[i] = {pipe->getDest()->getDescription(), pipe->getReverse() == nullptr ? "No" : "Yes", doubleToString(pipe->getCapacity())};
+    }
+    printTable(colLens, headers, cells);
+
+    cout << "│    Incoming pipes: ";
+    colLens = {30, 13, 8};
+    headers = {"Origin", "Bidirectional", "Capacity"};
+    cells = vector<vector<string>>(servicePoint->getIncoming().size(), vector<string>());
+    for(int i = 0; i < servicePoint->getIncoming().size(); i++) {
+        Pipe *pipe = servicePoint->getIncoming()[i];
+        cells[i] = {pipe->getOrig()->getDescription(), pipe->getReverse() == nullptr ? "No" : "Yes", doubleToString(pipe->getCapacity())};
     }
     printTable(colLens, headers, cells);
 }

@@ -23,3 +23,7 @@ double Reservoir::getDelivery() const {
         delivery -= pipe->getFlow();
     return delivery;
 }
+
+std::string Reservoir::getDescription() const {
+    return getCode() + ' ' + getName();
+}

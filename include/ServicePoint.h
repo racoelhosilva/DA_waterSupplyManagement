@@ -21,6 +21,7 @@ public:
     void setHidden(bool hidden);
 
     Edge<std::string> *addEdge(Vertex<std::string> *dest, double w) override;
+    virtual std::string getDescription() const = 0;
 
 private:
     int id;

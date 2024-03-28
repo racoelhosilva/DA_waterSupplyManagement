@@ -364,3 +364,20 @@ void WaterSupplyNetwork::print() {
     for (DeliverySite* site: getDeliverySites())
         std::cout << site->getCity() << ' ' << site->getSupplyRate() << '/' << site->getDemand() << '\n';
 }
+
+void compute_metrics(const vector<double> &v, double &max, double &mean, double &variance) {
+    max = 0, mean = 0, variance = 0;
+
+    // Compute max and mean
+    for (double value: v) {
+        mean += value;
+        if(value > max) max = value;
+    }
+    mean /= (double)v.size();
+
+    // Compute variance
+    for(double value: v) {
+        variance += (value - mean) * (value - mean);
+    }
+    variance /= (double)v.size();
+}

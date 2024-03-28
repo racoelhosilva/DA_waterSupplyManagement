@@ -9,6 +9,8 @@ class ServicePoint;
 class PumpingStation : public ServicePoint {
 public:
     PumpingStation(int id, const std::string &code);
+
+    std::string getDescription() const override;
 };
 
 
