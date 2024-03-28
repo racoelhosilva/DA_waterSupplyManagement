@@ -10,6 +10,7 @@ public:
     std::string getName() const;
     std::string getMunicipality() const;
     double getMaxDelivery() const;
+    double getDelivery() const;
 
 private:
     std::string name;

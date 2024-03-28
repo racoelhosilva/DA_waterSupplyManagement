@@ -10,6 +10,7 @@ public:
 
     const std::string &getCity() const;
     double getDemand() const;
+    double getSupplyRate() const;
     int getPopulation() const;
 
 private:

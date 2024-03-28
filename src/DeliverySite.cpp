@@ -16,3 +16,10 @@ double DeliverySite::getDemand() const {
 int DeliverySite::getPopulation() const {
     return population;
 }
+
+double DeliverySite::getSupplyRate() const {
+    double rate = 0;
+    for (Pipe *pipe: ServicePoint::getIncoming())
+        rate += pipe->getFlow();
+    return rate;
+}

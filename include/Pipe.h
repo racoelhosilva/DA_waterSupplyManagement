@@ -16,6 +16,7 @@ public:
     ServicePoint *getDest() const;
     ServicePoint *getOrig() const;
     Pipe *getReverse() const;
+    double getRemainingFlow() const;
 };
 
 #endif //DA_WATERSUPPLYMANAGEMENT_PIPE_H
