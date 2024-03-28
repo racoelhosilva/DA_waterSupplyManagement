@@ -18,17 +18,22 @@ public:
     void exitMenu();
 
     DeliverySite * citySelection();
+    Reservoir * reservoirSelection();
+    PumpingStation * pumpingStationSelection();
 
     std::string readInputText();
     void printWriteBuffer(const std::string &buffer);
 
     void cityDisplay(const std::vector<DeliverySite *> &cities);
+    void cityDisplayComparison(const std::vector<DeliverySite *> &cities);
     void displaySupplyDemand();
+    void displayServicePointEffects();
     void reservoirDisplay(const std::vector<Pipe> &pipe);
 
 private:
     int width = 80;
     WaterSupplyNetwork wsn;
+    std::unordered_map<std::string, double> cityToDefaultFlow;
 };
 
 

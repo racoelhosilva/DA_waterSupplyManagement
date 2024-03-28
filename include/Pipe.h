@@ -17,6 +17,12 @@ public:
     ServicePoint *getOrig() const;
     Pipe *getReverse() const;
     double getRemainingFlow() const;
+
+    bool isHidden();
+    void setHidden(bool hidden);
+
+private:
+    bool hidden;
 };
 
 #endif //DA_WATERSUPPLYMANAGEMENT_PIPE_H

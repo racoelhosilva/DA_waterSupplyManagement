@@ -110,7 +110,7 @@ void Interface::printBottom() {
 void Interface::waitInput() {
     initCapture();
     std::cout << HIDE_CURSOR;
-    cout << "Press ENTER to continue\n";
+    cout << std::string(25, ' ') << FAINT << "< Press " << RESET << BOLD << "ENTER" << RESET << FAINT << " to continue >\n" << RESET;
 
     Press press;
     do {
@@ -127,9 +127,13 @@ void Interface::mainMenu() {
              "Maximum Delivery for All Cities",
              "Maximum Delivery for Specific City",
              "Cities in Deficit",
-             "Function 4",
-             "Function 5",
+             "Test Reservoir Out of Commission",
+             "Test Pumping Stations Out of Service",
              "Function 6",
+             "Function 7",
+             "Function 8",
+             "Function 9",
+             "Function 10",
              "Choose your operation:"};
 
     int choice = 1;
@@ -150,17 +154,31 @@ void Interface::mainMenu() {
         case 1:{
             double supersinkFlow = wsn.getMaxFlow(false);
             cityDisplay(wsn.getDeliverySites());
+            cout << supersinkFlow << '\n';
             waitInput();
+
+            if (cityToDefaultFlow.empty()){
+                for (DeliverySite *ds : wsn.getDeliverySites()){
+                    cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
+                }
+            }
             break;
         }
         case 2:{
+            if (cityToDefaultFlow.empty()){
+                wsn.getMaxFlow(false);
+                for (DeliverySite *ds : wsn.getDeliverySites()){
+                    cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
+                }
+            }
             DeliverySite *city = citySelection();
             if (city == nullptr){
                 break;
             }
             wsn.hideAllButOneDeliverySite(city->getCode());
             double cityFlow = wsn.getMaxFlow(false);
-            cityDisplay({city});
+            cityDisplayComparison({city});
+            cout << cityFlow << '\n';
             wsn.unhideAll();
             waitInput();
             break;
@@ -169,14 +187,55 @@ void Interface::mainMenu() {
             double supersinkFlow = wsn.getMaxFlow(false);
             displaySupplyDemand();
             waitInput();
+
+            if (cityToDefaultFlow.empty()){
+                wsn.getMaxFlow(false);
+                for (DeliverySite *ds : wsn.getDeliverySites()){
+                    cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
+                }
+            }
             break;
         }
-        case 4:
-            std::cout << readInputText();
+        case 4:{
+            if (cityToDefaultFlow.empty()){
+                wsn.getMaxFlow(false);
+                for (DeliverySite *ds : wsn.getDeliverySites()){
+                    cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
+                }
+            }
+            Reservoir *r = reservoirSelection();
+            if (r == nullptr){
+                break;
+            }
+            wsn.hideReservoir(r->getCode());
+            double cityFlow = wsn.getMaxFlow(false);
+            cout << cityFlow << '\n';
+            displayServicePointEffects();
+            wsn.unhideAll();
+            waitInput();
             break;
-        case 5:
-        case 6:
-            std::cout << "\nChoice " << choice << " selected\n";
+        }
+        case 5:{
+            if (cityToDefaultFlow.empty()){
+                wsn.getMaxFlow(false);
+                for (DeliverySite *ds : wsn.getDeliverySites()){
+                    cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
+                }
+            }
+            PumpingStation *p = pumpingStationSelection();
+            if (p == nullptr){
+                break;
+            }
+            wsn.hidePumpingStation(p->getCode());
+            double cityFlow = wsn.getMaxFlow(false);
+            cout << cityFlow << '\n';
+            displayServicePointEffects();
+            wsn.unhideAll();
+            waitInput();
+            break;
+        }
+        case 10:
+            std::cout << readInputText();
             break;
         case 0:
             exitMenu();
@@ -218,6 +277,76 @@ DeliverySite * Interface::citySelection() {
         return nullptr;
     else
         return wsn.findDeliverySite(codes[choice]);
+}
+
+Reservoir * Interface::reservoirSelection() {
+    initCapture();
+    std::cout << HIDE_CURSOR;
+    std::vector<std::string> options =
+            {"Back"};
+    std::vector<std::string> codes = {""};
+    for (Reservoir* r : wsn.getReservoirs()){
+        options.push_back(r->getName());
+        codes.push_back(r->getCode());
+    }
+    std::string title = "Choose a city:";
+
+
+    int choice = 1, page = 0, llimit = 1, hlimit = min(11, (int)options.size()), page_limit = ((int)options.size() - 1) / 10;
+    Press press;
+    do {
+        system("cls || clear");
+        printTop();
+        printOptionsCity(options, title, choice, page);
+        printBottom();
+        press = getNextPress();
+
+        if (press == UP) {choice = (choice - 1 - llimit + (hlimit - llimit + 1)) % (hlimit - llimit + 1) + llimit;}
+        else if (press == DOWN) {choice = (choice + 1 - llimit + (hlimit - llimit + 1)) % (hlimit - llimit + 1) + llimit;}
+        else if (press == LEFT) {page = max(page - 1, 0); llimit = choice = page * 10 + 1; hlimit = min(llimit + 10, (int)options.size());}
+        else if (press == RIGHT) {page = min(page + 1, page_limit); llimit = choice = page * 10 + 1; hlimit = min(llimit + 10, (int)options.size());}
+    } while (press != RET);
+
+    endCapture();
+    if (choice == hlimit)
+        return nullptr;
+    else
+        return wsn.findReservoir(codes[choice]);
+}
+
+PumpingStation * Interface::pumpingStationSelection() {
+    initCapture();
+    std::cout << HIDE_CURSOR;
+    std::vector<std::string> options =
+            {"Back"};
+    std::vector<std::string> codes = {""};
+    for (PumpingStation* p : wsn.getPumpingStations()){
+        options.push_back(to_string(p->getId()));
+        codes.push_back(p->getCode());
+    }
+    std::string title = "Choose a pumping station:";
+
+
+    int choice = 1, page = 0, llimit = 1, hlimit = min(11, (int)options.size()), page_limit = ((int)options.size() - 1) / 10;
+    Press press;
+    do {
+        system("cls || clear");
+        printTop();
+        printOptionsCity(options, title, choice, page);
+        printBottom();
+        press = getNextPress();
+
+        if (press == UP) {choice = (choice - 1 - llimit + (hlimit - llimit + 1)) % (hlimit - llimit + 1) + llimit;}
+        else if (press == DOWN) {choice = (choice + 1 - llimit + (hlimit - llimit + 1)) % (hlimit - llimit + 1) + llimit;}
+        else if (press == LEFT) {page = max(page - 1, 0); llimit = choice = page * 10 + 1; hlimit = min(llimit + 10, (int)options.size());}
+        else if (press == RIGHT) {page = min(page + 1, page_limit); llimit = choice = page * 10 + 1; hlimit = min(llimit + 10, (int)options.size());}
+    } while (press != RET);
+
+    endCapture();
+    if (choice == hlimit)
+        return nullptr;
+    else
+        return wsn.findPumpingStation(codes[choice]);
 }
 
 std::string Interface::readInputText(){
@@ -275,6 +404,19 @@ void Interface::cityDisplay(const std::vector<DeliverySite *> &cities) {
     printTable(colLens, headers, cells);
 }
 
+void Interface::cityDisplayComparison(const std::vector<DeliverySite *> &cities) {
+    vector<int> colLens = {6, 6, 20, 7, 13, 13, 10};
+    vector<string> headers = {"Code", "Id", "City", "Demand", "Default Flow", "Incoming Flow", "Population"};
+    vector<vector<string>> cells(cities.size(), vector<string>());
+    for (int i = 0; i < cities.size(); i++) {
+        const DeliverySite *city = cities[i];
+        cells[i] = {city->getCode(), to_string(city->getId()), city->getCity(), doubleToString(city->getDemand()),
+                    doubleToString(cityToDefaultFlow[city->getCity()]),
+                    doubleToString(city->getSupplyRate()), to_string(city->getPopulation())};
+    }
+    printTable(colLens, headers, cells);
+}
+
 void Interface::displaySupplyDemand(){
     vector<int> colLens = {6, 6, 20, 7, 13, 7, 11};
     vector<string> headers = {"Code", "Id", "City", "Demand", "Incoming Flow", "Deficit", "Deficit (%)"};
@@ -295,6 +437,29 @@ void Interface::displaySupplyDemand(){
     else {
         printTable(colLens, headers, cells);
         cout << "There are " << cells.size() << " cities in deficit!\n";
+    }
+}
+
+void Interface::displayServicePointEffects() {
+    vector<int> colLens = {6, 6, 20, 13, 13, 10, 15};
+    vector<string> headers = {"Code", "Id", "City", "Regular Flow", "Incoming Flow", "Difference", "Difference (%)"};
+    vector<vector<string>> cells;
+    for (const DeliverySite *ds : wsn.getDeliverySites()) {
+        if (ds->getSupplyRate() < cityToDefaultFlow[ds->getCity()]) {
+            vector<string> row = {ds->getCode(), to_string(ds->getId()),
+                                  ds->getCity(), doubleToString(cityToDefaultFlow[ds->getCity()]),
+                                  doubleToString(ds->getSupplyRate()),
+                                  doubleToString(cityToDefaultFlow[ds->getCity()] - ds->getSupplyRate()),
+                                  doubleToString(((cityToDefaultFlow[ds->getCity()] - ds->getSupplyRate())/cityToDefaultFlow[ds->getCity()])*100)};
+            cells.push_back(row);
+        }
+    }
+    if (cells.empty()){
+        cout << "There are no changes!\n";
+    }
+    else {
+        printTable(colLens, headers, cells);
+        cout << "There are " << cells.size() << " cities affected!\n";
     }
 }
 

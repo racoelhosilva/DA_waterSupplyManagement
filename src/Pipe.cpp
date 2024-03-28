@@ -1,6 +1,6 @@
 #include "Pipe.h"
 
-Pipe::Pipe(Vertex<std::string> *orig, Vertex<std::string> *dest, double capacity) : Edge(orig, dest, capacity) {}
+Pipe::Pipe(Vertex<std::string> *orig, Vertex<std::string> *dest, double capacity) : Edge(orig, dest, capacity), hidden(false) {}
 
 double Pipe::getCapacity() const {
     return getWeight();
@@ -20,6 +20,16 @@ Pipe *Pipe::getReverse() const {
 
 double Pipe::getRemainingFlow() const {
     return getWeight() - getFlow();
+}
+
+bool Pipe::isHidden() {
+    return hidden;
+}
+
+void Pipe::setHidden(bool hidden) {
+    this->hidden = hidden;
+    if (getReverse() != nullptr)
+        getReverse()->hidden = hidden;
 }
 
 

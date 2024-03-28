@@ -185,6 +185,25 @@ DeliverySite *WaterSupplyNetwork::findDeliverySite(const std::string &code) {
     return dynamic_cast<DeliverySite*>(findVertex(code));
 }
 
+Reservoir *WaterSupplyNetwork::findReservoir(const std::string &code) {
+    return dynamic_cast<Reservoir*>(findVertex(code));
+}
+
+PumpingStation *WaterSupplyNetwork::findPumpingStation(const std::string &code) {
+    return dynamic_cast<PumpingStation*>(findVertex(code));
+}
+
+Pipe *WaterSupplyNetwork::findPipe(const std::string &src, const std::string &dest) {
+    ServicePoint *srcSp = findServicePoint(src);
+    if (srcSp == nullptr)
+        return nullptr;
+    for (Pipe* pipe: srcSp->getAdj()) {
+        if (pipe->getDest()->getCode() == dest)
+            return pipe;
+    }
+    return nullptr;
+}
+
 double WaterSupplyNetwork::getMaxFlow(bool theoretical) {
     ServicePoint *superSource = new Reservoir("", "", 0, "__super_source__", numeric_limits<double>::infinity()),
         *superSink = new DeliverySite("", 0, "__super_sink__", numeric_limits<double>::infinity(), 0);
@@ -247,7 +266,7 @@ void WaterSupplyNetwork::edmondsKarpBfs(ServicePoint *srcSp) {
         spQueue.pop();
 
         for (Pipe *p: u->getAdj()) {
-            if (p->getRemainingFlow() == 0)
+            if (p->isHidden() || p->getRemainingFlow() == 0)
                 continue;
             v = p->getDest();
             if (v->isHidden())
@@ -260,7 +279,7 @@ void WaterSupplyNetwork::edmondsKarpBfs(ServicePoint *srcSp) {
         }
 
         for (Pipe *p: u->getIncoming()) {
-            if (p->getFlow() == 0)
+            if (p->isHidden() || p->getFlow() == 0)
                 continue;
             v = p->getOrig();
             if (v->isHidden())
@@ -301,6 +320,24 @@ void WaterSupplyNetwork::unhideAll() {
 void WaterSupplyNetwork::hideAllButOneDeliverySite(const string &code) {
     for (DeliverySite *ds: getDeliverySites()) {
         ds->setHidden(ds->getCode() != code);
+    }
+}
+
+void WaterSupplyNetwork::hideReservoir(const string &code) {
+    for (Reservoir *r: getReservoirs()) {
+        r->setHidden(r->getCode() == code);
+    }
+}
+
+void WaterSupplyNetwork::hidePumpingStation(const std::string &code) {
+    for (PumpingStation *p: getPumpingStations()) {
+        p->setHidden(p->getCode() == code);
+    }
+}
+
+void WaterSupplyNetwork::hideServicePoint(const string &code) {
+    for (ServicePoint *sp: getServicePoints()) {
+        sp->setHidden(sp->getCode() == code);
     }
 }
 

@@ -13,18 +13,23 @@ public:
     WaterSupplyNetwork();
     bool parseData(const std::string& reservoirPath, const std::string& stationsPath, const std::string& citiesPath, const std::string& pipesPath);
 
-
     std::vector<ServicePoint*> getServicePoints();
     std::vector<Reservoir*> getReservoirs();
     std::vector<PumpingStation*> getPumpingStations();
     std::vector<DeliverySite*> getDeliverySites();
-    ServicePoint* findServicePoint(const std::string &code);
-    DeliverySite* findDeliverySite(const std::string &code);
+    ServicePoint *findServicePoint(const std::string &code);
+    DeliverySite *findDeliverySite(const std::string &code);
+    Reservoir *findReservoir(const std::string &code);
+    PumpingStation *findPumpingStation(const std::string &code);
+    Pipe *findPipe(const std::string &src, const std::string &dest);
 
     double getMaxFlow(bool theoretical);
 
     void unhideAll();
     void hideAllButOneDeliverySite(const std::string &code);
+    void hideReservoir(const std::string &code);
+    void hidePumpingStation(const std::string &code);
+    void hideServicePoint(const std::string &code);
 
 private:
     bool parseReservoir(const std::string& reservoirPath);
