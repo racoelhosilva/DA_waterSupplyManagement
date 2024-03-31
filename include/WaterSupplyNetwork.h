@@ -7,6 +7,7 @@
 #include "Reservoir.h"
 #include "PumpingStation.h"
 #include "DeliverySite.h"
+#include "AugmentingPath.h"
 
 class WaterSupplyNetwork : private Graph<std::string> {
 public:
@@ -27,6 +28,7 @@ public:
     double getMaxFlow(bool theoretical = false);
     double calculateMaxFlowAndAugmentingPathsThroughPipe(Pipe *pipe, bool theoretical = false);
     double calculateMaxFlowAndAugmentingPathsToCity(DeliverySite *city, bool theoretical = false);
+    double subtractAugmentingPaths(Pipe *pipe);
     double recalculateMaxFlow(bool theoretical = false);
 
     void unhideAll();
@@ -47,7 +49,8 @@ private:
     void createSuperSourceAndSuperSink(ServicePoint *&superSource, ServicePoint *&superSink, bool theoretical);
     void edmondsKarp(ServicePoint *source, ServicePoint *sink);
     void edmondsKarpBfs(ServicePoint* src);
-    void reduceAugmentingPath(ServicePoint *source, ServicePoint* sink);
+    AugmentingPath reduceAugmentingPath(ServicePoint *source, ServicePoint* sink);
+
     void destroySuperSourceAndSuperSink();
 
     void copyGraph(WaterSupplyNetwork *network1, WaterSupplyNetwork *network2);

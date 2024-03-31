@@ -3,6 +3,7 @@
 
 #include "Edge.h"
 #include "ServicePoint.h"
+#include "AugmentingPath.h"
 #include <string>
 
 class ServicePoint;
@@ -18,13 +19,13 @@ public:
     Pipe *getReverse() const;
     double getRemainingFlow() const;
 
-    const std::vector<std::vector<Pipe *>> &getAugmentingPaths() const;
-    std::vector<std::vector<Pipe *>> &getAugmentingPaths();
+    const std::vector<AugmentingPath> &getAugmentingPaths() const;
+    std::vector<AugmentingPath> &getAugmentingPaths();
 
     bool operator==(const Pipe &pipe) const;
 
 private:
-    std::vector<std::vector<Pipe *>> augmentingPaths;
+    std::vector<AugmentingPath> augmentingPaths;
 };
 
 #endif //DA_WATERSUPPLYMANAGEMENT_PIPE_H

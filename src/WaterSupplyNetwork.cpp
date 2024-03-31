@@ -5,6 +5,7 @@
 #include "PumpingStation.h"
 #include "DeliverySite.h"
 #include "Pipe.h"
+#include "AugmentingPath.h"
 #include <iostream>
 #include <limits>
 #include <queue>
@@ -308,19 +309,16 @@ void WaterSupplyNetwork::edmondsKarp(ServicePoint *source, ServicePoint *sink) {
         if (!sink->isVisited())
             break;
 
-        vector<Pipe*> augmentingPath;
+        AugmentingPath augmentingPath;
         ServicePoint *sp = sink;
         while (sp->getCode() != source->getCode()) {
             Pipe *path = sp->getPath();
             bool incoming = sp->getInfo() == path->getDest()->getInfo();
-            augmentingPath.push_back(path);
+            augmentingPath.addPipe(path);
             sp = incoming ? path->getOrig() : path->getDest();
         }
-        augmentingPath.pop_back();  // Remove edge to super source
-        reverse(augmentingPath.begin(), augmentingPath.end());
-        augmentingPath.pop_back();  // Remove edge to super sink
 
-        for (Pipe *pipe: augmentingPath) {
+        for (Pipe *pipe: augmentingPath.getPipes()) {
             if (pipe->isSelected())
                 pipe->getAugmentingPaths().push_back(augmentingPath);
         }
@@ -372,22 +370,32 @@ void WaterSupplyNetwork::edmondsKarpBfs(ServicePoint *srcSp) {
     }
 }
 
-void WaterSupplyNetwork::reduceAugmentingPath(ServicePoint *source, ServicePoint *sink) {
-    double pathCapacity = numeric_limits<double>::infinity();
+AugmentingPath WaterSupplyNetwork::reduceAugmentingPath(ServicePoint *source, ServicePoint *sink) {
     ServicePoint *sp = sink;
+    AugmentingPath augmentingPath;
+
     while (sp->getCode() != source->getCode()) {
         Pipe *path = sp->getPath();
-        bool incoming = sp->getInfo() == path->getDest()->getInfo();
-        pathCapacity = min(pathCapacity, incoming ? path->getRemainingFlow() : path->getFlow());
+        bool incoming = *sp == *path->getDest();
+        if (path->getOrig() != source && path->getDest() != sink)
+            augmentingPath.addPipe(path);
         sp = incoming ? path->getOrig() : path->getDest();
     }
 
-    sp = sink;
-    while (sp->getCode() != source->getCode()) {
-        Pipe *path = sp->getPath();
-        bool incoming = sp->getInfo() == path->getDest()->getInfo();
-        path->setFlow(incoming ? path->getFlow() + pathCapacity : path->getFlow() - pathCapacity);
-        sp = incoming ? path->getOrig() : path->getDest();
+    for (Pipe *pipe: augmentingPath.getPipes()) {
+        bool incoming = *sp == *pipe->getDest();
+        pipe->setFlow(incoming ? pipe->getFlow() + augmentingPath.getCapacity() : pipe->getFlow() - augmentingPath.getCapacity());
+    }
+}
+
+double WaterSupplyNetwork::subtractAugmentingPaths(Pipe *pipe) {
+    for (AugmentingPath augmentingPath: pipe->getAugmentingPaths()) {
+        ServicePoint *sp = augmentingPath.getPipes().back()->getDest();
+        for (Pipe *pipe: augmentingPath.getPipes()) {
+            bool incoming = *sp == *pipe->getDest();
+            pipe->setFlow(incoming ? pipe->getFlow() - augmentingPath.getCapacity() : pipe->getFlow() + augmentingPath.getCapacity());
+            sp = incoming ? pipe->getOrig() : pipe->getDest();
+        }
     }
 }
 
