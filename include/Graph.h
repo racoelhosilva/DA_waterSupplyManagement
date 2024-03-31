@@ -21,6 +21,7 @@ public:
     bool removeVertex(const T &in);
 
     bool addEdge(const T &src, const T &dest, double w);
+    bool addEdge(Edge<T> *v);
     bool removeEdge(const T &src, const T &dest);
     bool addBidirectionalEdge(const T &src, const T &dest, double w);
 

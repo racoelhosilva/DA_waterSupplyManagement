@@ -22,4 +22,16 @@ double Pipe::getRemainingFlow() const {
     return getWeight() - getFlow();
 }
 
+const std::vector<std::vector<Pipe *>> &Pipe::getAugmentingPaths() const {
+    return augmentingPaths;
+}
+
+std::vector<std::vector<Pipe *>> &Pipe::getAugmentingPaths() {
+    return augmentingPaths;
+}
+
+bool Pipe::operator==(const Pipe &pipe) const {
+    return getOrig() == pipe.getOrig() && getDest() == pipe.getDest();
+}
+
 

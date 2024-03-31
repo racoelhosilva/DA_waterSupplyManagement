@@ -8,10 +8,15 @@
 #include <iostream>
 #include <limits>
 #include <queue>
+#include <algorithm>
 
 using namespace std;
 
-WaterSupplyNetwork::WaterSupplyNetwork() = default;
+WaterSupplyNetwork::WaterSupplyNetwork() : auxNetwork(nullptr) {};
+
+WaterSupplyNetwork::~WaterSupplyNetwork() {
+    delete auxNetwork;
+}
 
 bool WaterSupplyNetwork::parseData(const string& reservoirPath, const string& stationsPath, const string& citiesPath, const string& pipesPath) {
     parseReservoir(reservoirPath);
@@ -181,9 +186,106 @@ ServicePoint *WaterSupplyNetwork::findServicePoint(const std::string &code) {
     return dynamic_cast<ServicePoint*>(findVertex(code));
 }
 
+Pipe *WaterSupplyNetwork::findPipe(const std::string &orig, const std::string &dest) {
+    ServicePoint *origSp = findServicePoint(orig);
+    if (origSp == nullptr)
+        return nullptr;
+    for (Pipe *p: origSp->getAdj()) {
+        if (p->getDest()->getCode() == dest)
+            return p;
+    }
+    return nullptr;
+}
+
 double WaterSupplyNetwork::getMaxFlow(bool theoretical) {
-    ServicePoint *superSource = new Reservoir("", "", 0, "__super_source__", numeric_limits<double>::infinity()),
-        *superSink = new DeliverySite("", 0, "__super_sink__", numeric_limits<double>::infinity(), 0);
+    ServicePoint *superSource, *superSink;
+    createSuperSourceAndSuperSink(superSource, superSink, theoretical);
+
+    for (ServicePoint *v: getServicePoints()) {
+        for (Pipe *p: v->getAdj()) {
+            p->setSelected(false);
+            p->setFlow(0);
+        }
+    }
+
+    edmondsKarp(superSource, superSink);
+
+    double maxFlow = 0;
+    for (Pipe *p: superSink->getIncoming()) {
+        maxFlow += p->getFlow();
+    }
+
+    destroySuperSourceAndSuperSink();
+    return maxFlow;
+}
+
+double WaterSupplyNetwork::calculateMaxFlowAndAugmentingPathsThroughPipe(Pipe *pipe, bool theoretical) {
+    ServicePoint *superSource, *superSink;
+    createSuperSourceAndSuperSink(superSource, superSink, theoretical);
+
+    for (ServicePoint *v: getServicePoints()) {
+        for (Pipe *p: v->getAdj()) {
+            p->setSelected(*p == *pipe);
+            p->setFlow(0);
+        }
+    }
+
+    edmondsKarp(superSource, superSink);
+
+    double maxFlow = 0;
+    for (Pipe *p: superSink->getIncoming()) {
+        maxFlow += p->getFlow();
+    }
+
+    destroySuperSourceAndSuperSink();
+    return maxFlow;
+}
+
+double WaterSupplyNetwork::calculateMaxFlowAndAugmentingPathsToCity(DeliverySite *city, bool theoretical) {
+    ServicePoint *superSource, *superSink;
+    createSuperSourceAndSuperSink(superSource, superSink, theoretical);
+
+    for (ServicePoint *v: getServicePoints()) {
+        for (Pipe *p: v->getIncoming()) {
+            p->setSelected(*v == *city);
+            p->setFlow(0);
+        }
+    }
+
+    edmondsKarp(superSource, superSink);
+
+    double maxFlow = 0;
+    for (Pipe *p: superSink->getIncoming()) {
+        maxFlow += p->getFlow();
+    }
+
+    destroySuperSourceAndSuperSink();
+    return maxFlow;
+}
+
+double WaterSupplyNetwork::recalculateMaxFlow(bool theoretical) {
+    ServicePoint *superSource, *superSink;
+    createSuperSourceAndSuperSink(superSource, superSink, theoretical);
+
+    for (ServicePoint *v: getServicePoints()) {
+        for (Pipe *p: v->getAdj())
+            p->setSelected(false);
+    }
+
+    edmondsKarp(superSource, superSink);
+
+    double maxFlow = 0;
+    for (Pipe *p: superSink->getIncoming()) {
+        maxFlow += p->getFlow();
+    }
+
+    destroySuperSourceAndSuperSink();
+    return maxFlow;
+}
+
+void WaterSupplyNetwork::createSuperSourceAndSuperSink(ServicePoint *&superSource, ServicePoint *&superSink, bool theoretical) {
+    superSource = new Reservoir("", "", 0, "__super_source__", numeric_limits<double>::infinity()),
+    superSink = new DeliverySite("", 0, "__super_sink__", numeric_limits<double>::infinity(), 0);
     addVertex(superSource);
     addVertex(superSink);
 
@@ -195,34 +297,33 @@ double WaterSupplyNetwork::getMaxFlow(bool theoretical) {
         if (d->getCode() != superSink->getCode())
             addEdge(d->getInfo(), superSink->getInfo(), theoretical ? numeric_limits<double>::infinity(): d->getDemand());
     }
-
-    edmondsKarp(superSource, superSink);
-    edmondsKarp(superSource, superSink);
-
-    double maxFlow = 0;
-    for (Pipe *p: superSink->getIncoming()) {
-        maxFlow += p->getFlow();
-    }
-
-    removeVertex(superSource->getCode());
-    removeVertex(superSink->getCode());
-
-    return maxFlow;
 }
 
 void WaterSupplyNetwork::edmondsKarp(ServicePoint *source, ServicePoint *sink) {
     if (source->getCode() == sink->getCode())
         return;
 
-    for (ServicePoint *v: getServicePoints()) {
-        for (Pipe *p: v->getAdj())
-            p->setFlow(0);
-    }
-
     while (true) {
         edmondsKarpBfs(source);
         if (!sink->isVisited())
             break;
+
+        vector<Pipe*> augmentingPath;
+        ServicePoint *sp = sink;
+        while (sp->getCode() != source->getCode()) {
+            Pipe *path = sp->getPath();
+            bool incoming = sp->getInfo() == path->getDest()->getInfo();
+            augmentingPath.push_back(path);
+            sp = incoming ? path->getOrig() : path->getDest();
+        }
+        augmentingPath.pop_back();  // Remove edge to super source
+        reverse(augmentingPath.begin(), augmentingPath.end());
+        augmentingPath.pop_back();  // Remove edge to super sink
+
+        for (Pipe *pipe: augmentingPath) {
+            if (pipe->isSelected())
+                pipe->getAugmentingPaths().push_back(augmentingPath);
+        }
 
         reduceAugmentingPath(source, sink);
     }
@@ -299,6 +400,52 @@ void WaterSupplyNetwork::hideAllButOneDeliverySite(const string &code) {
     for (DeliverySite *ds: getDeliverySites()) {
         ds->setHidden(ds->getCode() != code);
     }
+}
+
+void WaterSupplyNetwork::destroySuperSourceAndSuperSink() {
+    removeVertex("__super_source__");
+    removeVertex("__super_sink__");
+}
+
+void WaterSupplyNetwork::copyGraph(WaterSupplyNetwork *network1, WaterSupplyNetwork *network2) {
+    VertexSet<string> vertexes2 = network2->getVertexSet();
+    for (Vertex<string> *v: vertexes2)
+        network2->removeVertex(v->getInfo());
+
+    for (Reservoir *reservoir: network1->getReservoirs()) {
+        auto *newReservoir = new Reservoir(reservoir->getName(), reservoir->getMunicipality(), reservoir->getId(), reservoir->getCode(), reservoir->getMaxDelivery());
+        network2->addVertex(newReservoir);
+    }
+    for (PumpingStation *pumpingStation: network1->getPumpingStations()) {
+        auto *newPumpingStation = new PumpingStation(pumpingStation->getId(), pumpingStation->getCode());
+        network2->addVertex(newPumpingStation);
+    }
+    for (DeliverySite *deliverySite: network1->getDeliverySites()) {
+        auto *newDeliverySite = new DeliverySite(deliverySite->getCity(), deliverySite->getId(), deliverySite->getCode(), deliverySite->getDemand(), deliverySite->getPopulation());
+        network2->addVertex(newDeliverySite);
+    }
+
+    for (ServicePoint *sp: network1->getServicePoints()) {
+        for (Pipe *pipe: sp->getAdj()) {
+            if (pipe->getReverse() == nullptr && findPipe(sp->getCode(), pipe->getDest()->getCode()) == nullptr)
+                network2->addBidirectionalEdge(sp->getCode(), pipe->getDest()->getCode(), pipe->getCapacity());
+            else if (pipe->getReverse() != nullptr)
+                network2->addEdge(sp->getCode(), pipe->getDest()->getCode(), pipe->getCapacity());
+            findPipe(sp->getCode(), pipe->getDest()->getCode())->setFlow(pipe->getFlow());
+        }
+    }
+}
+
+void WaterSupplyNetwork::storeNetwork() {
+    if (auxNetwork == nullptr)
+        auxNetwork = new WaterSupplyNetwork();
+    copyGraph(this, auxNetwork);
+}
+
+void WaterSupplyNetwork::loadNetwork() {
+    if (auxNetwork == nullptr)
+        return;
+    copyGraph(auxNetwork, this);
 }
 
 

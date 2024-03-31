@@ -17,6 +17,14 @@ public:
     ServicePoint *getOrig() const;
     Pipe *getReverse() const;
     double getRemainingFlow() const;
+
+    const std::vector<std::vector<Pipe *>> &getAugmentingPaths() const;
+    std::vector<std::vector<Pipe *>> &getAugmentingPaths();
+
+    bool operator==(const Pipe &pipe) const;
+
+private:
+    std::vector<std::vector<Pipe *>> augmentingPaths;
 };
 
 #endif //DA_WATERSUPPLYMANAGEMENT_PIPE_H

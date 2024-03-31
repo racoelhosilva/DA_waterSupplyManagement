@@ -22,6 +22,8 @@ public:
 
     Edge<std::string> *addEdge(Vertex<std::string> *dest, double w) override;
 
+    bool operator==(const ServicePoint &sp) const;
+
 private:
     int id;
     bool hidden;
