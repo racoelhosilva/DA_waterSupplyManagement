@@ -187,6 +187,10 @@ ServicePoint *WaterSupplyNetwork::findServicePoint(const std::string &code) {
     return dynamic_cast<ServicePoint*>(findVertex(code));
 }
 
+DeliverySite *WaterSupplyNetwork::findDeliverySite(const std::string &code) {
+    return dynamic_cast<DeliverySite*>(findVertex(code));
+}
+
 Pipe *WaterSupplyNetwork::findPipe(const std::string &orig, const std::string &dest) {
     ServicePoint *origSp = findServicePoint(orig);
     if (origSp == nullptr)
@@ -204,8 +208,9 @@ double WaterSupplyNetwork::getMaxFlow(bool theoretical) {
 
     for (ServicePoint *v: getServicePoints()) {
         for (Pipe *p: v->getAdj()) {
-            p->setSelected(false);
+            p->setSelected(true);
             p->setFlow(0);
+            p->getAugmentingPaths().clear();
         }
     }
 
@@ -309,21 +314,12 @@ void WaterSupplyNetwork::edmondsKarp(ServicePoint *source, ServicePoint *sink) {
         if (!sink->isVisited())
             break;
 
-        AugmentingPath augmentingPath;
-        ServicePoint *sp = sink;
-        while (sp->getCode() != source->getCode()) {
-            Pipe *path = sp->getPath();
-            bool incoming = sp->getInfo() == path->getDest()->getInfo();
-            augmentingPath.addPipe(path);
-            sp = incoming ? path->getOrig() : path->getDest();
-        }
-
-        for (Pipe *pipe: augmentingPath.getPipes()) {
+        AugmentingPath augmentingPath = reduceAugmentingPath(source, sink);
+        for (auto pair: augmentingPath.getPipes()) {
+            Pipe *pipe = pair.first;
             if (pipe->isSelected())
                 pipe->getAugmentingPaths().push_back(augmentingPath);
         }
-
-        reduceAugmentingPath(source, sink);
     }
 }
 
@@ -343,6 +339,8 @@ void WaterSupplyNetwork::edmondsKarpBfs(ServicePoint *srcSp) {
         spQueue.pop();
 
         for (Pipe *p: u->getAdj()) {
+            if (p->isHidden())
+                continue;
             if (p->getRemainingFlow() == 0)
                 continue;
             v = p->getDest();
@@ -378,23 +376,25 @@ AugmentingPath WaterSupplyNetwork::reduceAugmentingPath(ServicePoint *source, Se
         Pipe *path = sp->getPath();
         bool incoming = *sp == *path->getDest();
         if (path->getOrig() != source && path->getDest() != sink)
-            augmentingPath.addPipe(path);
+            augmentingPath.addPipe(path, incoming);
         sp = incoming ? path->getOrig() : path->getDest();
     }
 
-    for (Pipe *pipe: augmentingPath.getPipes()) {
-        bool incoming = *sp == *pipe->getDest();
+    for (auto pair: augmentingPath.getPipes()) {
+        Pipe *pipe = pair.first;
+        bool incoming = pair.second;
         pipe->setFlow(incoming ? pipe->getFlow() + augmentingPath.getCapacity() : pipe->getFlow() - augmentingPath.getCapacity());
     }
+
+    return augmentingPath;
 }
 
-double WaterSupplyNetwork::subtractAugmentingPaths(Pipe *pipe) {
+void WaterSupplyNetwork::subtractAugmentingPaths(Pipe *pipe) {
     for (AugmentingPath augmentingPath: pipe->getAugmentingPaths()) {
-        ServicePoint *sp = augmentingPath.getPipes().back()->getDest();
-        for (Pipe *pipe: augmentingPath.getPipes()) {
-            bool incoming = *sp == *pipe->getDest();
-            pipe->setFlow(incoming ? pipe->getFlow() - augmentingPath.getCapacity() : pipe->getFlow() + augmentingPath.getCapacity());
-            sp = incoming ? pipe->getOrig() : pipe->getDest();
+        for (auto pair: augmentingPath.getPipes()) {
+            Pipe *p = pair.first;
+            bool incoming = pair.second;
+            p->setFlow(incoming ? p->getFlow() - augmentingPath.getCapacity() : p->getFlow() + augmentingPath.getCapacity());
         }
     }
 }
@@ -435,39 +435,81 @@ void WaterSupplyNetwork::copyGraph(WaterSupplyNetwork *network1, WaterSupplyNetw
 
     for (ServicePoint *sp: network1->getServicePoints()) {
         for (Pipe *pipe: sp->getAdj()) {
-            if (pipe->getReverse() == nullptr && findPipe(sp->getCode(), pipe->getDest()->getCode()) == nullptr)
+            if (pipe->getReverse() != nullptr && network2->findPipe(sp->getCode(), pipe->getDest()->getCode()) == nullptr)
                 network2->addBidirectionalEdge(sp->getCode(), pipe->getDest()->getCode(), pipe->getCapacity());
-            else if (pipe->getReverse() != nullptr)
+            else if (pipe->getReverse() == nullptr)
                 network2->addEdge(sp->getCode(), pipe->getDest()->getCode(), pipe->getCapacity());
-            findPipe(sp->getCode(), pipe->getDest()->getCode())->setFlow(pipe->getFlow());
+            network2->findPipe(sp->getCode(), pipe->getDest()->getCode())->setFlow(pipe->getFlow());
+        }
+    }
+}
+
+void WaterSupplyNetwork::copyFlows(WaterSupplyNetwork *network1, WaterSupplyNetwork *network2) {
+    for (ServicePoint *sp1: network1->getServicePoints()) {
+        for (Pipe *pipe1: sp1->getAdj()) {
+            Pipe *pipe2 = network2->findPipe(sp1->getCode(), pipe1->getDest()->getCode());
+            pipe2->setFlow(pipe1->getFlow());
         }
     }
 }
 
 void WaterSupplyNetwork::storeNetwork() {
-    if (auxNetwork == nullptr)
+    if (auxNetwork == nullptr) {
         auxNetwork = new WaterSupplyNetwork();
-    copyGraph(this, auxNetwork);
+        copyGraph(this, auxNetwork);
+    } else {
+        copyFlows(this, auxNetwork);
+    }
 }
 
 void WaterSupplyNetwork::loadNetwork() {
     if (auxNetwork == nullptr)
         return;
-    copyGraph(auxNetwork, this);
+    copyFlows(auxNetwork, this);
 }
 
 
 // TODO: Remove this function
 void WaterSupplyNetwork::print() {
-    hideAllButOneDeliverySite("C_17");
-    std::cout << "Max flow: " << getMaxFlow(false) << "\n\n";
-    std::cout << "Reservoirs:\n";
+    getMaxFlow();
+    storeNetwork();
+    unordered_map<string, unordered_map<string, double>> flows;
+    for (ServicePoint *sp: getServicePoints()) {
+        for (Pipe *pipe: sp->getAdj())
+            flows.insert({ pipe->getOrig()->getCode() + " " + pipe->getDest()->getCode(), unordered_map<string, double>() });
+    }
 
-    for (Reservoir* reservoir: getReservoirs())
-        std::cout << reservoir->getName() << ' ' << reservoir->getDelivery() << '/' << reservoir->getMaxDelivery() << '\n';
+    for (ServicePoint *sp: getServicePoints()) {
+        for (Pipe *pipe: sp->getAdj()) {
+            cout << sp->getCode() << " " << pipe->getDest()->getCode() << " " << pipe->getFlow() << " " << auxNetwork->findPipe(sp->getCode(), pipe->getDest()->getCode())->getFlow() << '\n';
+        }
+    }
 
-    std::cout << "\nCities:\n";
+    for (ServicePoint *sp: getServicePoints()) {
+        for (Pipe *pipe: sp->getAdj()) {
+            pipe->setHidden(true);
+            getMaxFlow();
+            pipe->setHidden(false);
+            for (DeliverySite *ds: getDeliverySites()) {
+                flows[pipe->getOrig()->getCode() + " " + pipe->getDest()->getCode()][ds->getCode()] =
+                        auxNetwork->findDeliverySite(ds->getCode())->getSupplyRate() - ds->getSupplyRate();
+            }
+        }
+    }
 
-    for (DeliverySite* site: getDeliverySites())
-        std::cout << site->getCity() << ' ' << site->getSupplyRate() << '/' << site->getDemand() << '\n';
+    for (ServicePoint *sp: getServicePoints()) {
+        for (Pipe *pipe: sp->getAdj()) {
+            getMaxFlow();
+            subtractAugmentingPaths(pipe);
+            if (pipe->getFlow() != 0)
+                cout << pipe->getFlow() << '\n';
+            pipe->setHidden(true);
+            recalculateMaxFlow();
+            pipe->setHidden(false);
+            for (DeliverySite *ds: getDeliverySites()) {
+                if (auxNetwork->findDeliverySite(ds->getCode())->getSupplyRate() - ds->getSupplyRate() != flows[pipe->getOrig()->getCode() + " " + pipe->getDest()->getCode()][ds->getCode()])
+                    cout << "Error: " << pipe->getOrig()->getCode() << " " << pipe->getDest()->getCode() << " " << ds->getCity() << " " << auxNetwork->findDeliverySite(ds->getCode())->getSupplyRate() - ds->getSupplyRate() << " != " << flows[pipe->getOrig()->getCode() + " " + pipe->getDest()->getCode()][ds->getCode()] << '\n';
+            }
+        }
+    }
 }

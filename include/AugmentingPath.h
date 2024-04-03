@@ -9,6 +9,8 @@
 #include <vector>
 #include "Pipe.h"
 
+class Pipe;
+
 class AugmentingPath {
 public:
     AugmentingPath();

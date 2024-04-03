@@ -1,6 +1,6 @@
 #include "Pipe.h"
 
-Pipe::Pipe(Vertex<std::string> *orig, Vertex<std::string> *dest, double capacity) : Edge(orig, dest, capacity) {}
+Pipe::Pipe(Vertex<std::string> *orig, Vertex<std::string> *dest, double capacity) : Edge(orig, dest, capacity), hidden(false) {}
 
 double Pipe::getCapacity() const {
     return getWeight();
@@ -22,16 +22,24 @@ double Pipe::getRemainingFlow() const {
     return getWeight() - getFlow();
 }
 
-const std::vector<std::vector<Pipe *>> &Pipe::getAugmentingPaths() const {
+const std::vector<AugmentingPath> &Pipe::getAugmentingPaths() const {
     return augmentingPaths;
 }
 
-std::vector<std::vector<Pipe *>> &Pipe::getAugmentingPaths() {
+std::vector<AugmentingPath> &Pipe::getAugmentingPaths() {
     return augmentingPaths;
 }
 
 bool Pipe::operator==(const Pipe &pipe) const {
     return getOrig() == pipe.getOrig() && getDest() == pipe.getDest();
+}
+
+bool Pipe::isHidden() const {
+    return hidden;
+}
+
+void Pipe::setHidden(bool hidden) {
+    Pipe::hidden = hidden;
 }
 
 

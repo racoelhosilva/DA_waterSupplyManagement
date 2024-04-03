@@ -23,12 +23,13 @@ public:
     std::vector<PumpingStation*> getPumpingStations();
     std::vector<DeliverySite*> getDeliverySites();
     ServicePoint *findServicePoint(const std::string &code);
+    DeliverySite *findDeliverySite(const std::string &code);
     Pipe *findPipe(const std::string &orig, const std::string &dest);
 
     double getMaxFlow(bool theoretical = false);
     double calculateMaxFlowAndAugmentingPathsThroughPipe(Pipe *pipe, bool theoretical = false);
     double calculateMaxFlowAndAugmentingPathsToCity(DeliverySite *city, bool theoretical = false);
-    double subtractAugmentingPaths(Pipe *pipe);
+    void subtractAugmentingPaths(Pipe *pipe);
     double recalculateMaxFlow(bool theoretical = false);
 
     void unhideAll();
@@ -54,6 +55,7 @@ private:
     void destroySuperSourceAndSuperSink();
 
     void copyGraph(WaterSupplyNetwork *network1, WaterSupplyNetwork *network2);
+    void copyFlows(WaterSupplyNetwork *network1, WaterSupplyNetwork *network2);
 
     WaterSupplyNetwork *auxNetwork;
 };
