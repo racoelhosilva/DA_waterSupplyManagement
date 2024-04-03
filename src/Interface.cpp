@@ -46,7 +46,7 @@ void Interface::printMenuOptions(const std::vector<std::string> &options, int ch
     }
 }
 
-void Interface::printOptionsCity(const std::vector<std::string> &options, const std::string &title, int choice, int page) {
+void Interface::printOptionsPages(const std::vector<std::string> &options, const std::string &title, int choice, int page) {
     std::cout << "│" << std::string(4, ' ') << std::setw(74) << std::left << title << "│" << '\n';
 
 
@@ -55,7 +55,7 @@ void Interface::printOptionsCity(const std::vector<std::string> &options, const 
         bool previous = false;
         for (int j = 0; j < options[idx].size(); j++){
             char c = options[idx][j];
-            if (!isalpha(c) && !isblank(c)){
+            if (!isalpha(c) && !isblank(c) && !isdigit(c) && (c != '_')){
                 if (!previous){
                     spaceLength++;
                     previous = true;
@@ -66,6 +66,9 @@ void Interface::printOptionsCity(const std::vector<std::string> &options, const 
             }
         }
         if (idx >= 10){
+            spaceLength--;
+        }
+        if (idx >= 100){
             spaceLength--;
         }
 
@@ -376,7 +379,7 @@ DeliverySite * Interface::citySelection() {
     do {
         system("cls || clear");
         printTop();
-        printOptionsCity(options, title, choice, page);
+        printOptionsPages(options, title, choice, page);
         printBottom();
         press = getNextPress();
 
@@ -411,7 +414,7 @@ Reservoir * Interface::reservoirSelection() {
     do {
         system("cls || clear");
         printTop();
-        printOptionsCity(options, title, choice, page);
+        printOptionsPages(options, title, choice, page);
         printBottom();
         press = getNextPress();
 
@@ -446,7 +449,7 @@ PumpingStation * Interface::pumpingStationSelection() {
     do {
         system("cls || clear");
         printTop();
-        printOptionsCity(options, title, choice, page);
+        printOptionsPages(options, title, choice, page);
         printBottom();
         press = getNextPress();
 
@@ -480,7 +483,7 @@ ServicePoint * Interface::servicePointSelection() {
     do {
         system("cls || clear");
         printTop();
-        printOptionsCity(options, title, choice, page);
+        printOptionsPages(options, title, choice, page);
         printBottom();
         press = getNextPress();
 
@@ -515,7 +518,7 @@ ServicePoint * Interface::servicePointSelection(ServicePoint *src) {
     do {
         system("cls || clear");
         printTop();
-        printOptionsCity(options, title, choice, page);
+        printOptionsPages(options, title, choice, page);
         printBottom();
         press = getNextPress();
 

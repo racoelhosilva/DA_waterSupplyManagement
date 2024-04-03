@@ -9,7 +9,7 @@ public:
     bool init();
 
     void printMenuOptions(const std::vector<std::string> &options, int choice);
-    void printOptionsCity(const std::vector<std::string> &options, const std::string &title, int choice, int page);
+    void printOptionsPages(const std::vector<std::string> &options, const std::string &title, int choice, int page);
     void printTop();
     void printBottom();
     void waitInput();
@@ -43,6 +43,7 @@ private:
     int width = 80;
     WaterSupplyNetwork wsn;
     std::unordered_map<std::string, double> cityToDefaultFlow;
+
     bool outputToFile = false;
     std::string fileName = "../output.txt";
 };
