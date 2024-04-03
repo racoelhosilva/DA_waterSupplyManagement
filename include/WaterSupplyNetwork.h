@@ -7,10 +7,13 @@
 #include "Reservoir.h"
 #include "PumpingStation.h"
 #include "DeliverySite.h"
+#include "AugmentingPath.h"
 
 class WaterSupplyNetwork : private Graph<std::string> {
 public:
     WaterSupplyNetwork();
+    ~WaterSupplyNetwork() override;
+
     bool parseData(const std::string& reservoirPath, const std::string& stationsPath, const std::string& citiesPath, const std::string& pipesPath);
 
     void print();
@@ -19,12 +22,21 @@ public:
     std::vector<Reservoir*> getReservoirs();
     std::vector<PumpingStation*> getPumpingStations();
     std::vector<DeliverySite*> getDeliverySites();
-    ServicePoint* findServicePoint(const std::string &code);
+    ServicePoint *findServicePoint(const std::string &code);
+    DeliverySite *findDeliverySite(const std::string &code);
+    Pipe *findPipe(const std::string &orig, const std::string &dest);
 
-    double getMaxFlow(bool theoretical);
+    double getMaxFlow(bool theoretical = false);
+    double calculateMaxFlowAndAugmentingPathsThroughPipe(Pipe *pipe, bool theoretical = false);
+    double calculateMaxFlowAndAugmentingPathsToCity(DeliverySite *city, bool theoretical = false);
+    void subtractAugmentingPaths(Pipe *pipe);
+    double recalculateMaxFlow(bool theoretical = false);
 
     void unhideAll();
     void hideAllButOneDeliverySite(const std::string &code);
+
+    void storeNetwork();
+    void loadNetwork();
 
 private:
     bool parseReservoir(const std::string& reservoirPath);
@@ -35,9 +47,17 @@ private:
     template<class T >
     std::vector<T*> filterVerticesByType();
 
+    void createSuperSourceAndSuperSink(ServicePoint *&superSource, ServicePoint *&superSink, bool theoretical);
     void edmondsKarp(ServicePoint *source, ServicePoint *sink);
     void edmondsKarpBfs(ServicePoint* src);
-    void reduceAugmentingPath(ServicePoint *source, ServicePoint* sink);
+    AugmentingPath reduceAugmentingPath(ServicePoint *source, ServicePoint* sink);
+
+    void destroySuperSourceAndSuperSink();
+
+    void copyGraph(WaterSupplyNetwork *network1, WaterSupplyNetwork *network2);
+    void copyFlows(WaterSupplyNetwork *network1, WaterSupplyNetwork *network2);
+
+    WaterSupplyNetwork *auxNetwork;
 };
 
 

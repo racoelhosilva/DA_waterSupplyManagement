@@ -26,6 +26,8 @@ add_executable(DA_waterSupplyManagement main.cpp
         src/Interface.cpp
         include/Interface.h
         include/input.h
-        src/input.cpp)
+        src/input.cpp
+        src/AugmentingPath.cpp
+        include/AugmentingPath.h)
 
 add_subdirectory(docs)
