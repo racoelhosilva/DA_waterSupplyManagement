@@ -14,7 +14,7 @@ bool Interface::init(){
     this->wsn = WaterSupplyNetwork();
     wsn.parseData("../datasetLarge/Reservoir.csv","../datasetLarge/Stations.csv","../datasetLarge/Cities.csv","../datasetLarge/Pipes.csv");
     std::ofstream ofs;
-    ofs.open("../output.txt", std::ofstream::out | std::ofstream::trunc);
+    ofs.open(fileName, std::ofstream::out | std::ofstream::trunc);
     ofs.close();
     system("cls || clear");
     return true;
@@ -133,7 +133,7 @@ void Interface::waitInput() {
 
 void Interface::saveGeneralMaxFlowToFile(const std::string& title) {
     std::ofstream output;
-    output.open("../output.txt", std::ios::app);
+    output.open(fileName, std::ios::app);
     output << "===>  " << title << '\n';
     for (auto c : wsn.getDeliverySites()){
         output << c->getDescription() << ',' << cityToDefaultFlow[c->getCity()] << '\n';
@@ -143,7 +143,7 @@ void Interface::saveGeneralMaxFlowToFile(const std::string& title) {
 
 void Interface::saveAllMaxFlowToFile(const std::string& title) {
     std::ofstream output;
-    output.open("../output.txt", std::ios::app);
+    output.open(fileName, std::ios::app);
     output << "===>  " << title << '\n';
     for (auto c : wsn.getDeliverySites()){
         double diff = c->getSupplyRate() - cityToDefaultFlow[c->getCity()];
@@ -154,9 +154,22 @@ void Interface::saveAllMaxFlowToFile(const std::string& title) {
 
 void Interface::saveSingleMaxFlowToFile(const DeliverySite* city) {
     std::ofstream output;
-    output.open("../output.txt");
+    output.open(fileName);
     output << "===>  " << "Max Flow for: " << city->getCity() << '\n';
     output << city->getDescription() << ',' << city->getSupplyRate() << '\n';
+    output.close();
+}
+
+void Interface::saveDeficitsToFile() {
+    std::ofstream output;
+    output.open(fileName, std::ios::app);
+    output << "===>  " << "Cities with Demand Deficits (Default Flow considered)" << '\n';
+    for (auto c : wsn.getDeliverySites()){
+        double diff = c->getDemand() - c->getSupplyRate();
+        if (diff != 0){
+            output << c->getDescription() << ',' << c->getDemand() << ',' << c->getSupplyRate() << ',' << diff << '\n';
+        }
+    }
     output.close();
 }
 
@@ -235,15 +248,19 @@ void Interface::mainMenu() {
         }
         case 3:{
             double supersinkFlow = wsn.getMaxFlow(false);
-            displaySupplyDemand();
-            waitInput();
-
             if (cityToDefaultFlow.empty()){
                 wsn.getMaxFlow(false);
                 for (DeliverySite *ds : wsn.getDeliverySites()){
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
             }
+            if (outputToFile){
+                saveDeficitsToFile();
+            }
+            else {
+                displaySupplyDemand();
+            }
+            waitInput();
             break;
         }
         case 4:{

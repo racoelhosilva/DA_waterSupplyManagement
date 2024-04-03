@@ -17,6 +17,7 @@ public:
     void saveGeneralMaxFlowToFile(const std::string& title);
     void saveAllMaxFlowToFile(const std::string& title);
     void saveSingleMaxFlowToFile(const DeliverySite* city);
+    void saveDeficitsToFile();
 
     void mainMenu();
     void exitMenu();
@@ -43,6 +44,7 @@ private:
     WaterSupplyNetwork wsn;
     std::unordered_map<std::string, double> cityToDefaultFlow;
     bool outputToFile = false;
+    std::string fileName = "../output.txt";
 };
 
 
