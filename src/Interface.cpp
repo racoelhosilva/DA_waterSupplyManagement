@@ -473,7 +473,8 @@ ServicePoint * Interface::servicePointSelection() {
             {"Back"};
     std::vector<std::string> codes = {""};
     for (ServicePoint* sp : wsn.getServicePoints()){
-        options.push_back(sp->getCode());
+        if (!sp->getAdj().empty())
+            options.push_back(sp->getCode());
     }
     std::string title = "Choose a service point:";
 
@@ -557,18 +558,33 @@ wstring toWstring(string str) {
     return converter.from_bytes(str);
 }
 
-void printTable(const vector<int> &colLens, const vector<string> &headers, const vector<vector<string>> &cells) {
-    cout << BOLD << INVERT << "   ";
+void Interface::printTable(const vector<int> &colLens, const vector<string> &headers, const vector<vector<string>> &cells) {
+    cout << '\n' << BOLD << INVERT << "  ";
     for (int i = 0; i < headers.size(); i++)
         cout << left << setw(colLens[i]) << headers[i] << ' ';
     cout << "  " << RESET << "\n";
     for (int i = 0; i < cells.size(); i++) {
-        cout << "│  ";
+        cout << "│ ";
         for (int j = 0; j < cells[i].size(); j++){
-            cout << left << setw(colLens[j]) << (cells[i][j]) << ' ';
+            int formatting = colLens[j];
+            string text = (cells[i][j]);
+            bool previous = false;
+            for (const char &c : text){
+                if (!isalpha(c) && !isblank(c) && !isdigit(c) && (c != '_') && (c != '.')){
+                    if (!previous){
+                        formatting++;
+                        previous = true;
+                    }
+                    else {
+                        previous = false;
+                    }
+                }
+            }
+            cout << left << setw(formatting) << text << ' ';
         }
-        cout << "│\n";
+        cout << " │\n";
     }
+    printBottom();
 }
 
 string doubleToString(double val, int precision = 5) {
@@ -637,12 +653,12 @@ void Interface::pipeDisplay(const ServicePoint *servicePoint) {
 }
 
 void Interface::cityDisplayComparison(const std::vector<DeliverySite *> &cities) {
-    vector<int> colLens = {6, 6, 20, 7, 13, 13, 10};
-    vector<string> headers = {"Code", "Id", "City", "Demand", "Default Flow", "Incoming Flow", "Population"};
+    vector<int> colLens = {6, 20, 10, 12, 12, 10};
+    vector<string> headers = {"Code", "City", "Demand", "Normal", "Focused", "Population"};
     vector<vector<string>> cells(cities.size(), vector<string>());
     for (int i = 0; i < cities.size(); i++) {
         const DeliverySite *city = cities[i];
-        cells[i] = {city->getCode(), to_string(city->getId()), city->getCity(), doubleToString(city->getDemand()),
+        cells[i] = {city->getCode(), city->getCity(), doubleToString(city->getDemand()),
                     doubleToString(cityToDefaultFlow[city->getCity()]),
                     doubleToString(city->getSupplyRate()), to_string(city->getPopulation())};
     }
@@ -650,12 +666,12 @@ void Interface::cityDisplayComparison(const std::vector<DeliverySite *> &cities)
 }
 
 void Interface::displaySupplyDemand(){
-    vector<int> colLens = {6, 6, 20, 7, 13, 7, 11};
-    vector<string> headers = {"Code", "Id", "City", "Demand", "Incoming Flow", "Deficit", "Deficit (%)"};
+    vector<int> colLens = {6, 22, 10, 12, 10, 10};
+    vector<string> headers = {"Code", "City", "Demand", "Flow", "Deficit", "Deficit %"};
     vector<vector<string>> cells;
     for (const DeliverySite *ds : wsn.getDeliverySites()) {
         if (ds->getDemand() > ds->getSupplyRate()) {
-            vector<string> row = {ds->getCode(), to_string(ds->getId()),
+            vector<string> row = {ds->getCode(),
                                   ds->getCity(), doubleToString(ds->getDemand()),
                                   doubleToString(ds->getSupplyRate()),
                                   doubleToString(ds->getDemand() - ds->getSupplyRate()),
@@ -673,12 +689,12 @@ void Interface::displaySupplyDemand(){
 }
 
 void Interface::displayServicePointEffects() {
-    vector<int> colLens = {6, 6, 20, 13, 13, 10, 15};
-    vector<string> headers = {"Code", "Id", "City", "Regular Flow", "Incoming Flow", "Difference", "Difference (%)"};
+    vector<int> colLens = {6, 20, 12, 12, 10, 10};
+    vector<string> headers = {"Code", "City", "Normal", "Affected", "Delta", "Delta %"};
     vector<vector<string>> cells;
     for (const DeliverySite *ds : wsn.getDeliverySites()) {
         if (ds->getSupplyRate() < cityToDefaultFlow[ds->getCity()]) {
-            vector<string> row = {ds->getCode(), to_string(ds->getId()),
+            vector<string> row = {ds->getCode(),
                                   ds->getCity(), doubleToString(cityToDefaultFlow[ds->getCity()]),
                                   doubleToString(ds->getSupplyRate()),
                                   doubleToString(cityToDefaultFlow[ds->getCity()] - ds->getSupplyRate()),

@@ -31,6 +31,7 @@ public:
     std::string readInputText();
     void printWriteBuffer(const std::string &buffer);
 
+    void printTable(const std::vector<int> &colLens, const std::vector<std::string> &headers, const std::vector<std::vector<std::string>> &cells);
     void cityDisplay(const std::vector<DeliverySite *> &cities);
     void cityDisplayComparison(const std::vector<DeliverySite *> &cities);
     void displaySupplyDemand();
