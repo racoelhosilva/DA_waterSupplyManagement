@@ -5,20 +5,25 @@
 #include <iomanip>
 #include <sstream>
 #include <codecvt>
+#include <algorithm>
+#include <fstream>
 
 using namespace std;
 
 bool Interface::init(){
     this->wsn = WaterSupplyNetwork();
     wsn.parseData("../datasetLarge/Reservoir.csv","../datasetLarge/Stations.csv","../datasetLarge/Cities.csv","../datasetLarge/Pipes.csv");
+    std::ofstream ofs;
+    ofs.open("../output.txt", std::ofstream::out | std::ofstream::trunc);
+    ofs.close();
     system("cls || clear");
     return true;
 }
 
-void Interface::printOptions(const std::vector<std::string> &options, int choice) {
+void Interface::printMenuOptions(const std::vector<std::string> &options, int choice) {
     std::cout << "│" << std::string(4, ' ') << std::setw(74) << std::left << options[options.size()-1] << "│" << '\n';
 
-    for (int idx = 1; idx < options.size() - 1; idx++){
+    for (int idx = 1; idx < options.size() - 2; idx++){
         if (choice == idx){
             std::cout << "│" << BOLD << GREEN << " [" << idx << "] " << RESET << BOLD << std::setw(73) << std::left << options[idx] << RESET << "│" << '\n';
         }
@@ -26,6 +31,13 @@ void Interface::printOptions(const std::vector<std::string> &options, int choice
             std::cout << "│" << GREEN << " [" << idx << "] " << RESET << FAINT << std::setw(73) << std::left << options[idx] << RESET << "│" << '\n';
         }
     }
+    if (choice == options.size()-2){
+        std::cout << "│" << BOLD << YELLOW << " [" << options.size()-2 << "] " << RESET << BOLD << std::setw(73) << std::left << options[options.size()-2] << RESET "│" << '\n';
+    }
+    else {
+        std::cout << "│" << YELLOW << " [" << options.size()-2 << "] " << RESET << FAINT << std::setw(73) << std::left << options[options.size()-2] << RESET << "│" << '\n';
+    }
+
     if (choice == 0){
         std::cout << "│" << BOLD << RED << " [0] " << RESET << BOLD << std::setw(73) << std::left << options[0] << RESET "│" << '\n';
     }
@@ -119,6 +131,35 @@ void Interface::waitInput() {
     endCapture();
 }
 
+void Interface::saveGeneralMaxFlowToFile(const std::string& title) {
+    std::ofstream output;
+    output.open("../output.txt", std::ios::app);
+    output << "===>  " << title << '\n';
+    for (auto c : wsn.getDeliverySites()){
+        output << c->getDescription() << ',' << cityToDefaultFlow[c->getCity()] << '\n';
+    }
+    output.close();
+}
+
+void Interface::saveAllMaxFlowToFile(const std::string& title) {
+    std::ofstream output;
+    output.open("../output.txt", std::ios::app);
+    output << "===>  " << title << '\n';
+    for (auto c : wsn.getDeliverySites()){
+        double diff = c->getSupplyRate() - cityToDefaultFlow[c->getCity()];
+        output << c->getDescription() << ',' << cityToDefaultFlow[c->getCity()] << ',' << c->getSupplyRate() << ',' << diff << '\n';
+    }
+    output.close();
+}
+
+void Interface::saveSingleMaxFlowToFile(const DeliverySite* city) {
+    std::ofstream output;
+    output.open("../output.txt");
+    output << "===>  " << "Max Flow for: " << city->getCity() << '\n';
+    output << city->getDescription() << ',' << city->getSupplyRate() << '\n';
+    output.close();
+}
+
 void Interface::mainMenu() {
     initCapture();
     std::cout << HIDE_CURSOR;
@@ -130,9 +171,8 @@ void Interface::mainMenu() {
              "Test Reservoir Out of Commission",
              "Test Pumping Stations Out of Service",
              "Test Pipe Failures",
-             "Function 7",
-             "Function 8",
-             "Function 9",
+             "Blank Function",
+             outputToFile ? "Set output to Console" : "Set output to File (output.txt)",
              "Choose your operation:"};
 
     int choice = 1;
@@ -140,7 +180,7 @@ void Interface::mainMenu() {
     do {
         system("cls || clear");
         printTop();
-        printOptions(options, choice);
+        printMenuOptions(options, choice);
         printBottom();
         press = getNextPress();
         if (press == UP) {choice -= 1; choice += (options.size()-1);}
@@ -152,15 +192,20 @@ void Interface::mainMenu() {
     switch (choice) {
         case 1:{
             double supersinkFlow = wsn.getMaxFlow(false);
-            cityDisplay(wsn.getDeliverySites());
-            cout << supersinkFlow << '\n';
-            waitInput();
-
             if (cityToDefaultFlow.empty()){
                 for (DeliverySite *ds : wsn.getDeliverySites()){
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
             }
+
+            if (outputToFile){
+                saveGeneralMaxFlowToFile("General Max Flow");
+            }
+            else {
+                cityDisplay(wsn.getDeliverySites());
+                cout << supersinkFlow << '\n';
+            }
+            waitInput();
             break;
         }
         case 2:{
@@ -176,8 +221,14 @@ void Interface::mainMenu() {
             }
             wsn.hideAllButOneDeliverySite(city->getCode());
             double cityFlow = wsn.getMaxFlow(false);
-            cityDisplayComparison({city});
-            cout << cityFlow << '\n';
+
+            if (outputToFile){
+                saveSingleMaxFlowToFile(city);
+            }
+            else {
+                cityDisplayComparison({city});
+                cout << cityFlow << '\n';
+            }
             wsn.unhideAll();
             waitInput();
             break;
@@ -208,8 +259,14 @@ void Interface::mainMenu() {
             }
             wsn.hideReservoir(r->getCode());
             double cityFlow = wsn.getMaxFlow(false);
-            cout << cityFlow << '\n';
-            displayServicePointEffects();
+
+            if (outputToFile){
+                saveAllMaxFlowToFile("Max Flow without Reservoir " + r->getCode());
+            }
+            else {
+                displayServicePointEffects();
+                cout << cityFlow << '\n';
+            }
             wsn.unhideAll();
             waitInput();
             break;
@@ -227,8 +284,14 @@ void Interface::mainMenu() {
             }
             wsn.hidePumpingStation(p->getCode());
             double cityFlow = wsn.getMaxFlow(false);
-            cout << cityFlow << '\n';
-            displayServicePointEffects();
+
+            if (outputToFile) {
+                saveAllMaxFlowToFile("Max Flow without Pumping Station " + p->getCode());
+            }
+            else {
+                displayServicePointEffects();
+                cout << cityFlow << '\n';
+            }
             wsn.unhideAll();
             waitInput();
             break;
@@ -254,13 +317,23 @@ void Interface::mainMenu() {
             Pipe *p = wsn.findPipe(src->getCode(), dest->getCode());
             wsn.hidePipe(p);
             double maxFlow = wsn.getMaxFlow(false);
-            displayServicePointEffects();
+
+            if (outputToFile){
+                saveAllMaxFlowToFile("Max Flow without Pipe " + src->getCode() + " -> " + dest->getCode());
+            }
+            else {
+                displayServicePointEffects();
+                cout << maxFlow << '\n';
+            }
             wsn.unhidePipe(p);
             waitInput();
             break;
         }
-        case 9:
+        case 7:
             std::cout << readInputText();
+            break;
+        case 8:
+            outputToFile = not outputToFile;
             break;
         case 0:
             exitMenu();
@@ -280,7 +353,6 @@ DeliverySite * Interface::citySelection() {
         codes.push_back(ds->getCode());
     }
     std::string title = "Choose a city:";
-
 
     int choice = 1, page = 0, llimit = 1, hlimit = min(11, (int)options.size()), page_limit = ((int)options.size() - 1) / 10;
     Press press;
@@ -460,6 +532,11 @@ std::string Interface::readInputText(){
     return getBuffer();
 }
 
+wstring toWstring(string str) {
+    wstring_convert<codecvt_utf8_utf16<wchar_t>> converter;
+    return converter.from_bytes(str);
+}
+
 void printTable(const vector<int> &colLens, const vector<string> &headers, const vector<vector<string>> &cells) {
     cout << BOLD << INVERT << "   ";
     for (int i = 0; i < headers.size(); i++)
@@ -467,8 +544,9 @@ void printTable(const vector<int> &colLens, const vector<string> &headers, const
     cout << "  " << RESET << "\n";
     for (int i = 0; i < cells.size(); i++) {
         cout << "│  ";
-        for (int j = 0; j < cells[i].size(); j++)
-            cout << left << setw(colLens[j]) << cells[i][j] << ' ';
+        for (int j = 0; j < cells[i].size(); j++){
+            cout << left << setw(colLens[j]) << (cells[i][j]) << ' ';
+        }
         cout << "│\n";
     }
 }
@@ -481,14 +559,9 @@ string doubleToString(double val, int precision = 5) {
     return ss.str();
 }
 
-wstring toWstring(string str) {
-    wstring_convert<codecvt_utf8_utf16<wchar_t>> converter;
-    return converter.from_bytes(str);
-}
-
 void Interface::cityDisplay(const std::vector<DeliverySite *> &cities) {
-    vector<int> colLens = {6, 6, 20, 7, 13, 10};
-    vector<string> headers = {"Code", "Id", "City", "Demand", "Incoming Flow", "Population"};
+    vector<int> colLens = {6, 4, 28, 10, 12, 10};
+    vector<string> headers = {"Code", "Id", "City", "Demand", "Flow", "Population"};
     vector<vector<string>> cells(cities.size(), vector<string>());
     for (int i = 0; i < cities.size(); i++) {
         const DeliverySite *city = cities[i];

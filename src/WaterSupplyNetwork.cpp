@@ -8,6 +8,7 @@
 #include <iostream>
 #include <limits>
 #include <queue>
+#include <algorithm>
 
 using namespace std;
 
@@ -174,6 +175,7 @@ vector<T *> WaterSupplyNetwork::filterVerticesByType() {
         if (r != nullptr)
             res.push_back(r);
     }
+    std::sort(res.begin(), res.end(), [](T* a, T* b) {return a->getCode() < b->getCode();});
     return res;
 }
 

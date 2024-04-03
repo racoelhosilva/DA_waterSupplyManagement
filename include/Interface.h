@@ -8,11 +8,15 @@ public:
 
     bool init();
 
-    void printOptions(const std::vector<std::string> &options, int choice);
+    void printMenuOptions(const std::vector<std::string> &options, int choice);
     void printOptionsCity(const std::vector<std::string> &options, const std::string &title, int choice, int page);
     void printTop();
     void printBottom();
     void waitInput();
+
+    void saveGeneralMaxFlowToFile(const std::string& title);
+    void saveAllMaxFlowToFile(const std::string& title);
+    void saveSingleMaxFlowToFile(const DeliverySite* city);
 
     void mainMenu();
     void exitMenu();
@@ -38,6 +42,7 @@ private:
     int width = 80;
     WaterSupplyNetwork wsn;
     std::unordered_map<std::string, double> cityToDefaultFlow;
+    bool outputToFile = false;
 };
 
 
