@@ -341,7 +341,7 @@ void WaterSupplyNetwork::edmondsKarpBfs(ServicePoint *srcSp) {
         for (Pipe *p: u->getAdj()) {
             if (p->isHidden())
                 continue;
-            if (p->getRemainingFlow() == 0)
+            if (p->getRemainingFlow() <= 0)
                 continue;
             v = p->getDest();
             if (v->isHidden())
@@ -354,7 +354,7 @@ void WaterSupplyNetwork::edmondsKarpBfs(ServicePoint *srcSp) {
         }
 
         for (Pipe *p: u->getIncoming()) {
-            if (p->getFlow() == 0)
+            if (p->getFlow() <= 0)
                 continue;
             v = p->getOrig();
             if (v->isHidden())
@@ -375,7 +375,7 @@ AugmentingPath WaterSupplyNetwork::reduceAugmentingPath(ServicePoint *source, Se
     while (sp->getCode() != source->getCode()) {
         Pipe *path = sp->getPath();
         bool incoming = *sp == *path->getDest();
-        if (path->getOrig() != source && path->getDest() != sink)
+//        if (path->getOrig() != source && path->getDest() != sink)
             augmentingPath.addPipe(path, incoming);
         sp = incoming ? path->getOrig() : path->getDest();
     }
@@ -384,6 +384,8 @@ AugmentingPath WaterSupplyNetwork::reduceAugmentingPath(ServicePoint *source, Se
         Pipe *pipe = pair.first;
         bool incoming = pair.second;
         pipe->setFlow(incoming ? pipe->getFlow() + augmentingPath.getCapacity() : pipe->getFlow() - augmentingPath.getCapacity());
+        if (pipe->getReverse() != nullptr)
+            pipe->getReverse()->setFlow(incoming ? pipe->getReverse()->getFlow() - augmentingPath.getCapacity() : pipe->getReverse()->getFlow() + augmentingPath.getCapacity());
     }
 
     return augmentingPath;
@@ -395,6 +397,8 @@ void WaterSupplyNetwork::subtractAugmentingPaths(Pipe *pipe) {
             Pipe *p = pair.first;
             bool incoming = pair.second;
             p->setFlow(incoming ? p->getFlow() - augmentingPath.getCapacity() : p->getFlow() + augmentingPath.getCapacity());
+            if (p->getReverse() != nullptr)
+                p->getReverse()->setFlow(incoming ? p->getReverse()->getFlow() + augmentingPath.getCapacity() : p->getReverse()->getFlow() - augmentingPath.getCapacity());
         }
     }
 }
@@ -471,45 +475,50 @@ void WaterSupplyNetwork::loadNetwork() {
 
 // TODO: Remove this function
 void WaterSupplyNetwork::print() {
-    getMaxFlow();
-    storeNetwork();
-    unordered_map<string, unordered_map<string, double>> flows;
+    cout << getMaxFlow() << '\n';
     for (ServicePoint *sp: getServicePoints()) {
         for (Pipe *pipe: sp->getAdj())
-            flows.insert({ pipe->getOrig()->getCode() + " " + pipe->getDest()->getCode(), unordered_map<string, double>() });
+            cout << sp->getCode() << " " << pipe->getDest()->getCode() << " " << pipe->getFlow() << '\n';
     }
 
-    for (ServicePoint *sp: getServicePoints()) {
-        for (Pipe *pipe: sp->getAdj()) {
-            cout << sp->getCode() << " " << pipe->getDest()->getCode() << " " << pipe->getFlow() << " " << auxNetwork->findPipe(sp->getCode(), pipe->getDest()->getCode())->getFlow() << '\n';
-        }
-    }
-
-    for (ServicePoint *sp: getServicePoints()) {
-        for (Pipe *pipe: sp->getAdj()) {
-            pipe->setHidden(true);
-            getMaxFlow();
-            pipe->setHidden(false);
-            for (DeliverySite *ds: getDeliverySites()) {
-                flows[pipe->getOrig()->getCode() + " " + pipe->getDest()->getCode()][ds->getCode()] =
-                        auxNetwork->findDeliverySite(ds->getCode())->getSupplyRate() - ds->getSupplyRate();
-            }
-        }
-    }
-
-    for (ServicePoint *sp: getServicePoints()) {
-        for (Pipe *pipe: sp->getAdj()) {
-            getMaxFlow();
-            subtractAugmentingPaths(pipe);
-            if (pipe->getFlow() != 0)
-                cout << pipe->getFlow() << '\n';
-            pipe->setHidden(true);
-            recalculateMaxFlow();
-            pipe->setHidden(false);
-            for (DeliverySite *ds: getDeliverySites()) {
-                if (auxNetwork->findDeliverySite(ds->getCode())->getSupplyRate() - ds->getSupplyRate() != flows[pipe->getOrig()->getCode() + " " + pipe->getDest()->getCode()][ds->getCode()])
-                    cout << "Error: " << pipe->getOrig()->getCode() << " " << pipe->getDest()->getCode() << " " << ds->getCity() << " " << auxNetwork->findDeliverySite(ds->getCode())->getSupplyRate() - ds->getSupplyRate() << " != " << flows[pipe->getOrig()->getCode() + " " + pipe->getDest()->getCode()][ds->getCode()] << '\n';
-            }
-        }
-    }
+//    storeNetwork();
+//    unordered_map<string, unordered_map<string, double>> flows;
+//    for (ServicePoint *sp: getServicePoints()) {
+//        for (Pipe *pipe: sp->getAdj())
+//            flows.insert({ pipe->getOrig()->getCode() + " " + pipe->getDest()->getCode(), unordered_map<string, double>() });
+//    }
+//
+//    for (ServicePoint *sp: getServicePoints()) {
+//        for (Pipe *pipe: sp->getAdj()) {
+//            cout << sp->getCode() << " " << pipe->getDest()->getCode() << " " << pipe->getFlow() << " " << auxNetwork->findPipe(sp->getCode(), pipe->getDest()->getCode())->getFlow() << '\n';
+//        }
+//    }
+//
+//    for (ServicePoint *sp: getServicePoints()) {
+//        for (Pipe *pipe: sp->getAdj()) {
+//            pipe->setHidden(true);
+//            getMaxFlow();
+//            pipe->setHidden(false);
+//            for (DeliverySite *ds: getDeliverySites()) {
+//                flows[pipe->getOrig()->getCode() + " " + pipe->getDest()->getCode()][ds->getCode()] =
+//                        auxNetwork->findDeliverySite(ds->getCode())->getSupplyRate() - ds->getSupplyRate();
+//            }
+//        }
+//    }
+//
+//    for (ServicePoint *sp: getServicePoints()) {
+//        for (Pipe *pipe: sp->getAdj()) {
+//            getMaxFlow();
+//            subtractAugmentingPaths(pipe);
+//            if (pipe->getFlow() != 0)
+//                cout << pipe->getFlow() << '\n';
+//            pipe->setHidden(true);
+//            recalculateMaxFlow();
+//            pipe->setHidden(false);
+//            for (DeliverySite *ds: getDeliverySites()) {
+//                if (auxNetwork->findDeliverySite(ds->getCode())->getSupplyRate() - ds->getSupplyRate() != flows[pipe->getOrig()->getCode() + " " + pipe->getDest()->getCode()][ds->getCode()])
+//                    cout << "Error: " << pipe->getOrig()->getCode() << " " << pipe->getDest()->getCode() << " " << ds->getCity() << " " << auxNetwork->findDeliverySite(ds->getCode())->getSupplyRate() - ds->getSupplyRate() << " != " << flows[pipe->getOrig()->getCode() + " " + pipe->getDest()->getCode()][ds->getCode()] << '\n';
+//            }
+//        }
+//    }
 }
