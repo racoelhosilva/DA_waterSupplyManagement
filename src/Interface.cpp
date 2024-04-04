@@ -134,6 +134,11 @@ void Interface::waitInput() {
     endCapture();
 }
 
+void Interface::printTitle(const std::string &title) {
+    system("cls || clear");
+    cout << '\n' << std::string((width/2) - (title.size()/2), ' ') << BOLD << CYAN << title << RESET << "\n\n";
+}
+
 void Interface::saveGeneralMaxFlowToFile(const std::string& title) {
     std::ofstream output;
     output.open(fileName, std::ios::app);
@@ -155,18 +160,18 @@ void Interface::saveAllMaxFlowToFile(const std::string& title) {
     output.close();
 }
 
-void Interface::saveSingleMaxFlowToFile(const DeliverySite* city) {
+void Interface::saveSingleMaxFlowToFile(const DeliverySite* city, const std::string& title) {
     std::ofstream output;
     output.open(fileName);
-    output << "===>  " << "Max Flow for: " << city->getCity() << '\n';
+    output << "===>  " << title << '\n';
     output << city->getDescription() << ',' << city->getSupplyRate() << '\n';
     output.close();
 }
 
-void Interface::saveDeficitsToFile() {
+void Interface::saveDeficitsToFile(const std::string& title) {
     std::ofstream output;
     output.open(fileName, std::ios::app);
-    output << "===>  " << "Cities with Demand Deficits (Default Flow considered)" << '\n';
+    output << "===>  " << title << '\n';
     for (auto c : wsn.getDeliverySites()){
         double diff = c->getDemand() - c->getSupplyRate();
         if (diff != 0){
@@ -213,11 +218,12 @@ void Interface::mainMenu() {
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
             }
-
+            std::string title = "Normal Max Flow (All Cities)";
             if (outputToFile){
-                saveGeneralMaxFlowToFile("General Max Flow");
+                saveGeneralMaxFlowToFile(title);
             }
             else {
+                printTitle(title);
                 cityDisplay(wsn.getDeliverySites());
                 cout << supersinkFlow << '\n';
             }
@@ -237,11 +243,12 @@ void Interface::mainMenu() {
             }
             wsn.hideAllButOneDeliverySite(city->getCode());
             double cityFlow = wsn.getMaxFlow(false);
-
+            std::string title = "Focused Max Flow (" + city->getCity() + ")";
             if (outputToFile){
-                saveSingleMaxFlowToFile(city);
+                saveSingleMaxFlowToFile(city, title);
             }
             else {
+                printTitle(title);
                 cityDisplayComparison({city});
                 cout << cityFlow << '\n';
             }
@@ -257,10 +264,12 @@ void Interface::mainMenu() {
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
             }
+            std::string title = "Cities with Demand Deficits (Normal Flow considered)";
             if (outputToFile){
-                saveDeficitsToFile();
+                saveDeficitsToFile(title);
             }
             else {
+                printTitle(title);
                 displaySupplyDemand();
             }
             waitInput();
@@ -280,10 +289,12 @@ void Interface::mainMenu() {
             wsn.hideReservoir(r->getCode());
             double cityFlow = wsn.getMaxFlow(false);
 
+            std::string title = "Max Flow without Reservoir " + r->getCode();
             if (outputToFile){
-                saveAllMaxFlowToFile("Max Flow without Reservoir " + r->getCode());
+                saveAllMaxFlowToFile(title);
             }
             else {
+                printTitle(title);
                 displayServicePointEffects();
                 cout << cityFlow << '\n';
             }
@@ -304,11 +315,12 @@ void Interface::mainMenu() {
             }
             wsn.hidePumpingStation(p->getCode());
             double cityFlow = wsn.getMaxFlow(false);
-
+            std::string title = "Max Flow without Pumping Station " + p->getCode();
             if (outputToFile) {
-                saveAllMaxFlowToFile("Max Flow without Pumping Station " + p->getCode());
+                saveAllMaxFlowToFile(title);
             }
             else {
+                printTitle(title);
                 displayServicePointEffects();
                 cout << cityFlow << '\n';
             }
@@ -337,11 +349,12 @@ void Interface::mainMenu() {
             Pipe *p = wsn.findPipe(src->getCode(), dest->getCode());
             wsn.hidePipe(p);
             double maxFlow = wsn.getMaxFlow(false);
-
+            std::string title = "Max Flow without Pipe " + src->getCode() + " -> " + dest->getCode();
             if (outputToFile){
-                saveAllMaxFlowToFile("Max Flow without Pipe " + src->getCode() + " -> " + dest->getCode());
+                saveAllMaxFlowToFile(title);
             }
             else {
+                printTitle(title);
                 displayServicePointEffects();
                 cout << maxFlow << '\n';
             }
@@ -559,7 +572,7 @@ wstring toWstring(string str) {
 }
 
 void Interface::printTable(const vector<int> &colLens, const vector<string> &headers, const vector<vector<string>> &cells) {
-    cout << '\n' << BOLD << INVERT << "  ";
+    cout << BOLD << INVERT << "  ";
     for (int i = 0; i < headers.size(); i++)
         cout << left << setw(colLens[i]) << headers[i] << ' ';
     cout << "  " << RESET << "\n";

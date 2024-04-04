@@ -13,11 +13,12 @@ public:
     void printTop();
     void printBottom();
     void waitInput();
+    void printTitle(const std::string& title);
 
     void saveGeneralMaxFlowToFile(const std::string& title);
     void saveAllMaxFlowToFile(const std::string& title);
-    void saveSingleMaxFlowToFile(const DeliverySite* city);
-    void saveDeficitsToFile();
+    void saveSingleMaxFlowToFile(const DeliverySite* city, const std::string& title);
+    void saveDeficitsToFile(const std::string& title);
 
     void mainMenu();
     void exitMenu();
