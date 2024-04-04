@@ -2,6 +2,8 @@
 #define DA_WATERSUPPLYMANAGEMENT_WATERSUPPLYNETWORK_H
 
 #include <string>
+#include <queue>
+#include <stack>
 #include "Graph.h"
 #include "ServicePoint.h"
 #include "Reservoir.h"
@@ -23,14 +25,15 @@ public:
     std::vector<PumpingStation*> getPumpingStations();
     std::vector<DeliverySite*> getDeliverySites();
     ServicePoint *findServicePoint(const std::string &code);
+    Reservoir *findReservoir(const std::string &code);
     DeliverySite *findDeliverySite(const std::string &code);
     Pipe *findPipe(const std::string &orig, const std::string &dest);
 
     double getMaxFlow(bool theoretical = false);
-    double calculateMaxFlowAndAugmentingPathsThroughPipe(Pipe *pipe, bool theoretical = false);
-    double calculateMaxFlowAndAugmentingPathsToCity(DeliverySite *city, bool theoretical = false);
-    void subtractAugmentingPaths(Pipe *pipe);
-    double recalculateMaxFlow(bool theoretical = false);
+    double calculateMaxFlowAndAugmentingPathsThroughPipe(Pipe *pipe);
+    double calculateMaxFlowAndAugmentingPathsToCity(DeliverySite *city);
+    void subtractAugmentingPaths();
+    double recalculateMaxFlow();
 
     void unhideAll();
     void hideAllButOneDeliverySite(const std::string &code);
@@ -47,7 +50,7 @@ private:
     template<class T >
     std::vector<T*> filterVerticesByType();
 
-    void createSuperSourceAndSuperSink(ServicePoint *&superSource, ServicePoint *&superSink, bool theoretical);
+    void createSuperSourceAndSuperSink();
     void edmondsKarp(ServicePoint *source, ServicePoint *sink);
     void edmondsKarpBfs(ServicePoint* src);
     AugmentingPath reduceAugmentingPath(ServicePoint *source, ServicePoint* sink);
@@ -58,6 +61,9 @@ private:
     void copyFlows(WaterSupplyNetwork *network1, WaterSupplyNetwork *network2);
 
     WaterSupplyNetwork *auxNetwork;
+    ServicePoint *superSource;
+    ServicePoint *superSink;
+    std::vector<AugmentingPath> augmentingPaths;
 };
 
 

@@ -18,10 +18,14 @@ public:
     void addPipe(Pipe *pipe, bool incoming);
     const std::vector<std::pair<Pipe *, bool>> &getPipes() const;
     double getCapacity() const;
+    bool isSelected() const;
+
+    void setSelected(bool selected);
 
 private:
     std::vector<std::pair<Pipe *, bool>> pipes;
     double capacity;
+    bool selected;
 };
 
 

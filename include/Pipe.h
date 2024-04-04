@@ -19,17 +19,19 @@ public:
     ServicePoint *getOrig() const;
     Pipe *getReverse() const;
     double getRemainingFlow() const;
-
-    const std::vector<AugmentingPath> &getAugmentingPaths() const;
-    std::vector<AugmentingPath> &getAugmentingPaths();
-
     bool isHidden() const;
+
     void setHidden(bool hidden);
+    void setCapacity(double capacity);
+
+    const std::vector<AugmentingPath*> &getAugmentingPaths() const;
+    std::vector<AugmentingPath*> &getAugmentingPaths();
+    void selectAugmentingPaths() const;
 
     bool operator==(const Pipe &pipe) const;
 
 private:
-    std::vector<AugmentingPath> augmentingPaths;
+    std::vector<AugmentingPath*> augmentingPaths;
     bool hidden;
 };
 
