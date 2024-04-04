@@ -8,7 +8,7 @@
 
 using namespace std;
 
-AugmentingPath::AugmentingPath(): capacity(numeric_limits<double>::infinity()) {};
+AugmentingPath::AugmentingPath(): capacity(numeric_limits<double>::infinity()), selected(false) {};
 
 void AugmentingPath::addPipe(Pipe *pipe, bool incoming) {
     capacity = min(capacity, incoming ? pipe->getRemainingFlow() : pipe->getFlow());
@@ -21,6 +21,14 @@ const std::vector<std::pair<Pipe *, bool>> &AugmentingPath::getPipes() const {
 
 double AugmentingPath::getCapacity() const {
     return capacity;
+}
+
+bool AugmentingPath::isSelected() const {
+    return selected;
+}
+
+void AugmentingPath::setSelected(bool selected) {
+    AugmentingPath::selected = selected;
 }
 
 

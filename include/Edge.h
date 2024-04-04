@@ -20,6 +20,7 @@ public:
     bool isSelected() const;
     Edge *getReverse() const;
 
+    void setWeight(double weight);
     void setFlow(double flow);
     void setSelected(bool selected);
     void setReverse(Edge *reverse);
@@ -34,7 +35,7 @@ private:
 };
 
 template <class T>
-Edge<T>::Edge(Vertex<T> *orig, Vertex<T> *dest, double weight) : orig(orig), dest(dest), weight(weight) {}
+Edge<T>::Edge(Vertex<T> *orig, Vertex<T> *dest, double weight) : orig(orig), dest(dest), weight(weight), reverse(nullptr) {}
 
 template<class T>
 Edge<T>::~Edge() = default;
@@ -67,6 +68,11 @@ bool Edge<T>::isSelected() const {
 template <class T>
 Edge<T> *Edge<T>::getReverse() const {
     return reverse;
+}
+
+template<class T>
+void Edge<T>::setWeight(double weight) {
+    Edge::weight = weight;
 }
 
 template <class T>
