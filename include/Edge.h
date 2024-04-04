@@ -34,7 +34,7 @@ private:
 };
 
 template <class T>
-Edge<T>::Edge(Vertex<T> *orig, Vertex<T> *dest, double weight) : orig(orig), dest(dest), weight(weight) {}
+Edge<T>::Edge(Vertex<T> *orig, Vertex<T> *dest, double weight) : orig(orig), dest(dest), weight(weight), reverse(nullptr) {}
 
 template<class T>
 Edge<T>::~Edge() = default;

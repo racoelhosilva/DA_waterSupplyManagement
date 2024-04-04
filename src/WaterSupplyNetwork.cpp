@@ -367,6 +367,7 @@ void WaterSupplyNetwork::print() {
         std::cout << site->getCity() << ' ' << site->getSupplyRate() << '/' << site->getDemand() << '\n';
 }
 
+
 void compute_metrics(const vector<double> &v, double &max, double &mean, double &variance) {
     max = 0, mean = 0, variance = 0;
 
@@ -382,4 +383,24 @@ void compute_metrics(const vector<double> &v, double &max, double &mean, double 
         variance += (value - mean) * (value - mean);
     }
     variance /= (double)v.size();
+}
+
+
+void WaterSupplyNetwork::getMetrics(double &max, double &mean, double &variance){
+    vector<double> differences;
+
+    for(ServicePoint *v: getServicePoints()) {
+        for(Pipe *p: v->getAdj()) {
+            p->setHidden(p->getReverse() != nullptr && p->getFlow() <= 0 && !(p->getReverse()->isHidden()));
+        }
+    }
+
+    for (ServicePoint *v: getServicePoints()) {
+        for (Pipe *p: v->getAdj()) {
+            if(p->isHidden()) continue;
+            differences.push_back(p->getCapacity() - p->getFlow());
+        }
+    }
+
+    compute_metrics(differences, max, mean, variance);
 }

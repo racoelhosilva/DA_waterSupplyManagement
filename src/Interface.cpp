@@ -12,7 +12,7 @@ using namespace std;
 
 bool Interface::init(){
     this->wsn = WaterSupplyNetwork();
-    wsn.parseData("../datasetLarge/Reservoir.csv","../datasetLarge/Stations.csv","../datasetLarge/Cities.csv","../datasetLarge/Pipes.csv");
+    datasetMenu();
     std::ofstream ofs;
     ofs.open(fileName, std::ofstream::out | std::ofstream::trunc);
     ofs.close();
@@ -207,6 +207,15 @@ void Interface::saveDeficitsToFile(const std::string& title) {
     output.close();
 }
 
+void Interface::saveMetricsToFile(const std::string &title, double imx, double im, double iv, double fmx, double fm, double fv) {
+    std::ofstream output;
+    output.open(fileName, std::ios::app);
+    output << "===>  " << title << '\n';
+    output << imx << ',' << im << ',' << iv << '\n';
+    output << fmx << ',' << fm << ',' << fv << '\n';
+    output.close();
+}
+
 void Interface::mainMenu() {
     initCapture();
     std::cout << HIDE_CURSOR;
@@ -218,6 +227,7 @@ void Interface::mainMenu() {
              "Test Reservoir Out of Commission",
              "Test Pumping Stations Out of Service",
              "Test Pipe Failures",
+             "Network Balancing",
              "Blank Function",
              outputToFile ? "Set output to Console" : "Set output to File (output.txt)",
              "Choose your operation:"};
@@ -410,9 +420,27 @@ void Interface::mainMenu() {
             }
             break;
         }
-        case 7:
-            std::cout << readInputText();
+        case 7:{
+            double initialMax, initialMean, initialVariance;
+            wsn.getMetrics(initialMax, initialMean, initialVariance);
+
+            //wsn.balance();
+
+            double finalMax, finalMean, finalVariance;
+            wsn.getMetrics(finalMax, finalMean, finalVariance);
+
+            std::string title = "Balancing Metrics";
+            if (outputToFile){
+                saveMetricsToFile(title, initialMax, initialMean, initialVariance, finalMax, finalMean, finalVariance);
+            }
+            else {
+                printTitle(title);
+                displayMetrics(initialMax, initialMean, initialVariance, finalMax, finalMean, finalVariance);
+            }
+
+            waitInput();
             break;
+        }
         case 8:
             outputToFile = not outputToFile;
             break;
@@ -420,7 +448,6 @@ void Interface::mainMenu() {
             exitMenu();
             break;
     }
-    mainMenu();
 }
 
 bool Interface::pipeMenu() {
@@ -467,6 +494,47 @@ bool Interface::pipeMenu() {
     }
     return false;
 }
+
+void Interface::datasetMenu() {
+    initCapture();
+    std::cout << HIDE_CURSOR;
+    std::vector<std::string> options =
+            {"Quit",
+            "Large Data Set (Portugal)",
+            "Small Data Set (Madeira)",
+            "Custom Data Set (Check README)",
+            "Choose the Dataset"
+            };
+
+    int choice = 1;
+    Press press;
+    do {
+        system("cls || clear");
+        printTop();
+        printMenuOptions(options, choice);
+        printBottom();
+        press = getNextPress();
+        if (press == UP) {choice -= 1; choice += (options.size()-1);}
+        else if (press == DOWN) {choice += 1;}
+        choice = choice % (options.size()-1);
+    } while (press != RET);
+
+    endCapture();
+
+    switch (choice) {
+        case 1:
+            wsn.parseData("../datasetLarge/Reservoir.csv","../datasetLarge/Stations.csv","../datasetLarge/Cities.csv","../datasetLarge/Pipes.csv");
+            break;
+        case 2:
+            wsn.parseData("../datasetSmall/Reservoirs_Madeira.csv","../datasetSmall/Stations_Madeira.csv","../datasetSmall/Cities_Madeira.csv","../datasetSmall/Pipes_Madeira.csv");
+            break;
+        case 3:
+            wsn.parseData("../dataset/Reservoir.csv","../dataset/Stations.csv","../dataset/Cities.csv","../dataset/Pipes.csv");
+            break;
+        default:
+            exit(0);
+    }
+}  
 
 DeliverySite * Interface::citySelection() {
     initCapture();
@@ -825,6 +893,15 @@ void Interface::displayServicePointEffects() {
             cout << std::string(infoSpacing, ' ') << "There are " << BOLD << YELLOW << cells.size() << RESET << " cities affected!\n";
         }
     }
+}
+
+void Interface::displayMetrics(double imx, double im, double iv, double fmx, double fm, double fv) {
+    vector<int> colLens = {24, 24, 25};
+    vector<string> headers = {"Maximum", "Mean", "Variance"};
+    vector<vector<string>> cells;
+    cells.push_back({doubleToString(imx), doubleToString(im), doubleToString(iv)});
+    cells.push_back({doubleToString(fmx), doubleToString(fm), doubleToString(fv)});
+    printTable(colLens, headers, cells);
 }
 
 void Interface::exitMenu() {

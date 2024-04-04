@@ -34,6 +34,9 @@ public:
     void hidePipe(Pipe *pipe);
     void unhidePipe(Pipe *pipe);
 
+    void getMetrics(double &max, double &mean, double &variance);
+
+
 private:
     bool parseReservoir(const std::string& reservoirPath);
     bool parseStations(const std::string& stationsPath);

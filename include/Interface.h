@@ -22,10 +22,12 @@ public:
     void saveAllMaxFlowToFile(const std::string& title);
     void saveSingleMaxFlowToFile(const DeliverySite* city, const std::string& title);
     void saveDeficitsToFile(const std::string& title);
+    void saveMetricsToFile(const std::string& title, double, double, double, double, double, double);
 
     bool pipeMenu();
     void mainMenu();
     void exitMenu();
+    void datasetMenu();
 
     DeliverySite * citySelection();
     Reservoir * reservoirSelection();
@@ -41,6 +43,7 @@ public:
     void cityDisplayComparison(const std::vector<DeliverySite *> &cities);
     void displaySupplyDemand();
     void displayServicePointEffects();
+    void displayMetrics(double, double, double, double, double, double);
     void reservoirDisplay(const std::vector<Reservoir *> &reservoirs);
     void pumpingStationDisplay(const std::vector<PumpingStation *> &pumpingStations);
     void pipeDisplay(const ServicePoint *servicePoint);
