@@ -136,7 +136,7 @@ void Interface::waitInput() {
 
 void Interface::printTitle(const std::string &title) {
     system("cls || clear");
-    cout << '\n' << std::string((width/2) - (title.size()/2), ' ') << BOLD << CYAN << title << RESET << "\n\n";
+    cout << '\n' << std::string((width/2) - (title.size()/2), ' ') << BOLD << BLUE << title << RESET << "\n\n";
 }
 
 void Interface::printNetworkFlow(double flow, bool compare) {
@@ -146,6 +146,23 @@ void Interface::printNetworkFlow(double flow, bool compare) {
         cout << ' ' << FAINT << '/' << ' ' << defaultNetworkFlow << RESET;
     }
     cout << '\n';
+}
+
+void Interface::printSelectedPipes() {
+    cout << "│  " << BOLD << left << setw(76) << "Hidden Pipes:" << RESET << "│\n";
+    for (const Pipe * p : selectedPipes){
+        std::string option = p->getOrig()->getCode() + " -> " + p->getDest()->getCode();
+        cout << "│" << std::string(4, ' ') << BOLD << YELLOW << "-" << RESET
+             << std::string(1, ' ') << left << setw(72) << option << "│\n";
+    }
+}
+
+void Interface::printHiddenPipes() {
+    cout << std::string(infoSpacing, ' ') << "Hidden Pipes: " << CYAN;
+    for (Pipe * pipe : selectedPipes){
+        cout << pipe->getOrig()->getCode() << "->" << pipe->getDest()->getCode() << "  ";
+    }
+    cout << RESET << '\n';
 }
 
 void Interface::saveGeneralMaxFlowToFile(const std::string& title) {
@@ -344,6 +361,7 @@ void Interface::mainMenu() {
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
             }
+
             ServicePoint *src = servicePointSelection();
             if (src == nullptr){
                 break;
@@ -352,21 +370,44 @@ void Interface::mainMenu() {
             if (dest == nullptr){
                 break;
             }
-
             Pipe *p = wsn.findPipe(src->getCode(), dest->getCode());
             wsn.hidePipe(p);
-            double networkFlow = wsn.getMaxFlow(false);
-            std::string title = "Max Flow without Pipe " + src->getCode() + " -> " + dest->getCode();
-            if (outputToFile){
-                saveAllMaxFlowToFile(title);
+            selectedPipes.insert(p);
+
+            bool process = pipeMenu();
+            if (process){
+                double networkFlow = wsn.getMaxFlow(false);
+                std::string title = "Max Flow without Pipes";
+                if (outputToFile){
+                    title.append(": ");
+                    int count = 0;
+                    for (Pipe* pipe : selectedPipes){
+                        if (count != 0){
+                            title.append(", ");
+                        }
+                        title.append(pipe->getOrig()->getCode());
+                        title.append(" -> ");
+                        title.append(pipe->getDest()->getCode());
+                        count++;
+                    }
+                    saveAllMaxFlowToFile(title);
+                }
+                else {
+                    printTitle(title);
+                    displayServicePointEffects();
+                    printHiddenPipes();
+                    printNetworkFlow(networkFlow);
+                }
             }
-            else {
-                printTitle(title);
-                displayServicePointEffects();
-                printNetworkFlow(networkFlow);
+
+            for (Pipe* pipe : selectedPipes){
+                wsn.unhidePipe(pipe);
             }
-            wsn.unhidePipe(p);
-            waitInput();
+            selectedPipes.clear();
+
+            if (process){
+                waitInput();
+            }
             break;
         }
         case 7:
@@ -380,6 +421,51 @@ void Interface::mainMenu() {
             break;
     }
     mainMenu();
+}
+
+bool Interface::pipeMenu() {
+    initCapture();
+    std::cout << HIDE_CURSOR;
+    std::vector<std::string> options =
+            {"Quit",
+             "Add more Pipes",
+             "Process Operation",
+             "Choose your operation:"};
+
+    int choice = 1;
+    Press press;
+    do {
+        system("cls || clear");
+        printTop();
+        printMenuOptions(options, choice);
+        printSelectedPipes();
+        printBottom();
+        press = getNextPress();
+        if (press == UP) {choice -= 1; choice += (options.size()-1);}
+        else if (press == DOWN) {choice += 1;}
+        choice = choice % (options.size()-1);
+    } while (press != RET);
+
+    endCapture();
+    switch (choice) {
+        case 1: {
+            ServicePoint *src = servicePointSelection();
+            if (src == nullptr){
+                break;
+            }
+            ServicePoint *dest = servicePointSelection(src);
+            if (dest == nullptr){
+                break;
+            }
+            Pipe *p = wsn.findPipe(src->getCode(), dest->getCode());
+            wsn.hidePipe(p);
+            selectedPipes.insert(p);
+            return pipeMenu();
+        }
+        case 2:
+            return true;
+    }
+    return false;
 }
 
 DeliverySite * Interface::citySelection() {

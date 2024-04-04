@@ -15,12 +15,15 @@ public:
     void waitInput();
     void printTitle(const std::string& title);
     void printNetworkFlow(double flow, bool compare = true);
+    void printSelectedPipes();
+    void printHiddenPipes();
 
     void saveGeneralMaxFlowToFile(const std::string& title);
     void saveAllMaxFlowToFile(const std::string& title);
     void saveSingleMaxFlowToFile(const DeliverySite* city, const std::string& title);
     void saveDeficitsToFile(const std::string& title);
 
+    bool pipeMenu();
     void mainMenu();
     void exitMenu();
 
@@ -48,6 +51,7 @@ private:
     WaterSupplyNetwork wsn;
     double defaultNetworkFlow;
     std::unordered_map<std::string, double> cityToDefaultFlow;
+    std::unordered_set<Pipe *> selectedPipes;
 
     bool outputToFile = false;
     std::string fileName = "../output.txt";
