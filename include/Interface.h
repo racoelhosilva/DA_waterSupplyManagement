@@ -14,6 +14,7 @@ public:
     void printBottom();
     void waitInput();
     void printTitle(const std::string& title);
+    void printNetworkFlow(double flow, bool compare = true);
 
     void saveGeneralMaxFlowToFile(const std::string& title);
     void saveAllMaxFlowToFile(const std::string& title);
@@ -42,8 +43,10 @@ public:
     void pipeDisplay(const ServicePoint *servicePoint);
 
 private:
+    int infoSpacing = 8;
     int width = 80;
     WaterSupplyNetwork wsn;
+    double defaultNetworkFlow;
     std::unordered_map<std::string, double> cityToDefaultFlow;
 
     bool outputToFile = false;

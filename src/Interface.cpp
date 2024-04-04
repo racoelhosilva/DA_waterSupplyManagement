@@ -125,7 +125,7 @@ void Interface::printBottom() {
 void Interface::waitInput() {
     initCapture();
     std::cout << HIDE_CURSOR;
-    cout << std::string(25, ' ') << FAINT << "< Press " << RESET << BOLD << "ENTER" << RESET << FAINT << " to continue >\n" << RESET;
+    cout << '\n' << std::string(25, ' ') << FAINT << "< Press " << RESET << BOLD << "ENTER" << RESET << FAINT << " to continue >\n" << RESET;
 
     Press press;
     do {
@@ -137,6 +137,15 @@ void Interface::waitInput() {
 void Interface::printTitle(const std::string &title) {
     system("cls || clear");
     cout << '\n' << std::string((width/2) - (title.size()/2), ' ') << BOLD << CYAN << title << RESET << "\n\n";
+}
+
+void Interface::printNetworkFlow(double flow, bool compare) {
+    cout << std::string(infoSpacing, ' ') << "Total Network Flow: "
+         << BOLD << MAGENTA << flow << RESET;
+    if (compare){
+        cout << ' ' << FAINT << '/' << ' ' << defaultNetworkFlow << RESET;
+    }
+    cout << '\n';
 }
 
 void Interface::saveGeneralMaxFlowToFile(const std::string& title) {
@@ -212,7 +221,8 @@ void Interface::mainMenu() {
     endCapture();
     switch (choice) {
         case 1:{
-            double supersinkFlow = wsn.getMaxFlow(false);
+            double networkFlow = wsn.getMaxFlow(false);
+            defaultNetworkFlow = networkFlow;
             if (cityToDefaultFlow.empty()){
                 for (DeliverySite *ds : wsn.getDeliverySites()){
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
@@ -225,14 +235,14 @@ void Interface::mainMenu() {
             else {
                 printTitle(title);
                 cityDisplay(wsn.getDeliverySites());
-                cout << supersinkFlow << '\n';
+                printNetworkFlow(networkFlow, false);
             }
             waitInput();
             break;
         }
         case 2:{
             if (cityToDefaultFlow.empty()){
-                wsn.getMaxFlow(false);
+                defaultNetworkFlow = wsn.getMaxFlow(false);
                 for (DeliverySite *ds : wsn.getDeliverySites()){
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
@@ -242,7 +252,7 @@ void Interface::mainMenu() {
                 break;
             }
             wsn.hideAllButOneDeliverySite(city->getCode());
-            double cityFlow = wsn.getMaxFlow(false);
+            wsn.getMaxFlow(false);
             std::string title = "Focused Max Flow (" + city->getCity() + ")";
             if (outputToFile){
                 saveSingleMaxFlowToFile(city, title);
@@ -250,16 +260,16 @@ void Interface::mainMenu() {
             else {
                 printTitle(title);
                 cityDisplayComparison({city});
-                cout << cityFlow << '\n';
             }
             wsn.unhideAll();
             waitInput();
             break;
         }
         case 3:{
-            double supersinkFlow = wsn.getMaxFlow(false);
+            // TODO: should we calculate again? or check first if the values are in the map?
+            wsn.getMaxFlow(false);
             if (cityToDefaultFlow.empty()){
-                wsn.getMaxFlow(false);
+                defaultNetworkFlow = wsn.getMaxFlow(false);
                 for (DeliverySite *ds : wsn.getDeliverySites()){
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
@@ -277,7 +287,7 @@ void Interface::mainMenu() {
         }
         case 4:{
             if (cityToDefaultFlow.empty()){
-                wsn.getMaxFlow(false);
+                defaultNetworkFlow = wsn.getMaxFlow(false);
                 for (DeliverySite *ds : wsn.getDeliverySites()){
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
@@ -287,8 +297,7 @@ void Interface::mainMenu() {
                 break;
             }
             wsn.hideReservoir(r->getCode());
-            double cityFlow = wsn.getMaxFlow(false);
-
+            double networkFlow = wsn.getMaxFlow(false);
             std::string title = "Max Flow without Reservoir " + r->getCode();
             if (outputToFile){
                 saveAllMaxFlowToFile(title);
@@ -296,7 +305,7 @@ void Interface::mainMenu() {
             else {
                 printTitle(title);
                 displayServicePointEffects();
-                cout << cityFlow << '\n';
+                printNetworkFlow(networkFlow);
             }
             wsn.unhideAll();
             waitInput();
@@ -304,7 +313,7 @@ void Interface::mainMenu() {
         }
         case 5:{
             if (cityToDefaultFlow.empty()){
-                wsn.getMaxFlow(false);
+                defaultNetworkFlow = wsn.getMaxFlow(false);
                 for (DeliverySite *ds : wsn.getDeliverySites()){
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
@@ -314,7 +323,7 @@ void Interface::mainMenu() {
                 break;
             }
             wsn.hidePumpingStation(p->getCode());
-            double cityFlow = wsn.getMaxFlow(false);
+            double networkFlow = wsn.getMaxFlow(false);
             std::string title = "Max Flow without Pumping Station " + p->getCode();
             if (outputToFile) {
                 saveAllMaxFlowToFile(title);
@@ -322,7 +331,7 @@ void Interface::mainMenu() {
             else {
                 printTitle(title);
                 displayServicePointEffects();
-                cout << cityFlow << '\n';
+                printNetworkFlow(networkFlow);
             }
             wsn.unhideAll();
             waitInput();
@@ -330,17 +339,15 @@ void Interface::mainMenu() {
         }
         case 6:{
             if (cityToDefaultFlow.empty()){
-                wsn.getMaxFlow(false);
+                defaultNetworkFlow = wsn.getMaxFlow(false);
                 for (DeliverySite *ds : wsn.getDeliverySites()){
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
             }
-
             ServicePoint *src = servicePointSelection();
             if (src == nullptr){
                 break;
             }
-
             ServicePoint *dest = servicePointSelection(src);
             if (dest == nullptr){
                 break;
@@ -348,7 +355,7 @@ void Interface::mainMenu() {
 
             Pipe *p = wsn.findPipe(src->getCode(), dest->getCode());
             wsn.hidePipe(p);
-            double maxFlow = wsn.getMaxFlow(false);
+            double networkFlow = wsn.getMaxFlow(false);
             std::string title = "Max Flow without Pipe " + src->getCode() + " -> " + dest->getCode();
             if (outputToFile){
                 saveAllMaxFlowToFile(title);
@@ -356,7 +363,7 @@ void Interface::mainMenu() {
             else {
                 printTitle(title);
                 displayServicePointEffects();
-                cout << maxFlow << '\n';
+                printNetworkFlow(networkFlow);
             }
             wsn.unhidePipe(p);
             waitInput();
@@ -693,11 +700,16 @@ void Interface::displaySupplyDemand(){
         }
     }
     if (cells.empty()){
-        cout << "There are no cities in deficit!\n";
+        cout << std::string(infoSpacing, ' ') << "There are " << BOLD << YELLOW << "no" << RESET << " cities in deficit!\n";
     }
     else {
         printTable(colLens, headers, cells);
-        cout << "There are " << cells.size() << " cities in deficit!\n";
+        if (cells.size() == 1){
+            cout << std::string(infoSpacing, ' ') << "There is " << BOLD << YELLOW << cells.size() << RESET << " city in deficit!\n";
+        }
+        else {
+            cout << std::string(infoSpacing, ' ') << "There are " << BOLD << YELLOW << cells.size() << RESET << " cities in deficit!\n";
+        }
     }
 }
 
@@ -716,11 +728,16 @@ void Interface::displayServicePointEffects() {
         }
     }
     if (cells.empty()){
-        cout << "There are no changes!\n";
+        cout << std::string(infoSpacing, ' ') << "There are " << BOLD << YELLOW << "no" << RESET << " cities affected!\n";
     }
     else {
         printTable(colLens, headers, cells);
-        cout << "There are " << cells.size() << " cities affected!\n";
+        if (cells.size() == 1){
+            cout << std::string(infoSpacing, ' ') << "There is " << BOLD << YELLOW << cells.size() << RESET << " city affected!\n";
+        }
+        else {
+            cout << std::string(infoSpacing, ' ') << "There are " << BOLD << YELLOW << cells.size() << RESET << " cities affected!\n";
+        }
     }
 }
 
