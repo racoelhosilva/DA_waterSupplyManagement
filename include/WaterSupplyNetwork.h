@@ -36,7 +36,8 @@ public:
     double getMaxFlowWithoutStation(PumpingStation* station);
     std::vector<Pipe*> getCriticalPipesToCity(DeliverySite *city);
 
-    void unhideAll();
+    void unhideAllServicePoints();
+    void unhideAllPipes();
     void hideAllButOneDeliverySite(const std::string &code);
     void hideReservoir(const std::string &code);
     void hidePumpingStation(const std::string &code);
