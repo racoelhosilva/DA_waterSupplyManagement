@@ -60,15 +60,13 @@ private:
     template<class T >
     std::vector<T*> filterVerticesByType();
 
-    void createSuperSourceAndSuperSink();
+    void createSuperSourceAndSuperSink(bool createPipes = true);
     void edmondsKarp(ServicePoint *source, ServicePoint *sink, bool savePaths = false);
     void edmondsKarpBfs(ServicePoint* src);
     AugmentingPath reduceAugmentingPath(ServicePoint *source, ServicePoint* sink);
     void subtractAugmentingPaths();
     double recalculateMaxFlow();
     void unselectAllAugmentingPaths();
-
-    void destroySuperSourceAndSuperSink();
 
     void copyGraph(WaterSupplyNetwork *network1, WaterSupplyNetwork *network2);
     void copyFlows(WaterSupplyNetwork *network1, WaterSupplyNetwork *network2);
