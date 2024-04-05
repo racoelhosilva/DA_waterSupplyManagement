@@ -12,6 +12,8 @@ public:
     double getMaxDelivery() const;
     double getDelivery() const;
 
+    std::string getDescription() const;
+
 private:
     std::string name;
     std::string municipality;

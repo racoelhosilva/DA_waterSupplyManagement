@@ -19,5 +19,11 @@ double Reservoir::getDelivery() const {
     double delivery = 0;
     for (Pipe *pipe: ServicePoint::getAdj())
         delivery += pipe->getFlow();
+    for (Pipe *pipe: ServicePoint::getIncoming())
+        delivery -= pipe->getFlow();
     return delivery;
+}
+
+std::string Reservoir::getDescription() const {
+    return getCode() + ' ' + getName();
 }

@@ -39,7 +39,9 @@ bool Pipe::isHidden() const {
 }
 
 void Pipe::setHidden(bool hidden) {
-    Pipe::hidden = hidden;
+    this->hidden = hidden;
+    if (getReverse() != nullptr)
+        getReverse()->hidden = hidden;
 }
 
 void Pipe::setCapacity(double capacity) {

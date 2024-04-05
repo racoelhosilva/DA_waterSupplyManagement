@@ -23,3 +23,7 @@ double DeliverySite::getSupplyRate() const {
         rate += pipe->getFlow();
     return rate;
 }
+
+std::string DeliverySite::getDescription() const {
+    return getCode() + ' ' + getCity();
+}

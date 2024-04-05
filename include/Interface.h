@@ -5,11 +5,59 @@
 
 class Interface {
 public:
+
     bool init();
 
-private:
-    WaterSupplyNetwork wsn;
-};
+    void printMenuOptions(const std::vector<std::string> &options, int choice);
+    void printOptionsPages(const std::vector<std::string> &options, const std::string &title, int choice, int page);
+    void printTop();
+    void printBottom();
+    void waitInput();
+    void printTitle(const std::string& title);
+    void printNetworkFlow(double flow, bool compare = true);
+    void printSelectedPipes();
+    void printHiddenPipes();
 
+    void saveGeneralMaxFlowToFile(const std::string& title);
+    void saveAllMaxFlowToFile(const std::string& title);
+    void saveSingleMaxFlowToFile(const DeliverySite* city, const std::string& title);
+    void saveDeficitsToFile(const std::string& title);
+    void saveMetricsToFile(const std::string& title, double, double, double, double, double, double);
+
+    bool pipeMenu();
+    void mainMenu();
+    void exitMenu();
+    void datasetMenu();
+
+    DeliverySite * citySelection();
+    Reservoir * reservoirSelection();
+    PumpingStation * pumpingStationSelection();
+    ServicePoint * servicePointSelection();
+    ServicePoint * servicePointSelection(ServicePoint *src);
+
+    std::string readInputText();
+    void printWriteBuffer(const std::string &buffer);
+
+    void printTable(const std::vector<int> &colLens, const std::vector<std::string> &headers, const std::vector<std::vector<std::string>> &cells);
+    void cityDisplay(const std::vector<DeliverySite *> &cities);
+    void cityDisplayComparison(const std::vector<DeliverySite *> &cities);
+    void displaySupplyDemand();
+    void displayServicePointEffects();
+    void displayMetrics(double, double, double, double, double, double);
+    void reservoirDisplay(const std::vector<Reservoir *> &reservoirs);
+    void pumpingStationDisplay(const std::vector<PumpingStation *> &pumpingStations);
+    void pipeDisplay(const ServicePoint *servicePoint);
+
+private:
+    int infoSpacing = 8;
+    int width = 80;
+    WaterSupplyNetwork wsn;
+    double defaultNetworkFlow;
+    std::unordered_map<std::string, double> cityToDefaultFlow;
+    std::unordered_set<Pipe *> selectedPipes;
+
+    bool outputToFile = false;
+    std::string fileName = "../output.txt";
+};
 
 #endif //DA_WATERSUPPLYMANAGEMENT_INTERFACE_H

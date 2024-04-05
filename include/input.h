@@ -1,14 +1,14 @@
-//
-// Created by bruno on 3/8/24.
-//
-
 #ifndef DA_WATERSUPPLYMANAGEMENT_INPUT_H
 #define DA_WATERSUPPLYMANAGEMENT_INPUT_H
 
-enum Press { NONE, UP, DOWN, RET };
+#include <string>
+
+enum Press { UP, DOWN, LEFT, RIGHT, RET, DELETE, CHAR };
 
 void initCapture();
 Press getNextPress();
+void clearBuffer();
+std::string getBuffer();
 void endCapture();
 
 #endif //DA_WATERSUPPLYMANAGEMENT_INPUT_H

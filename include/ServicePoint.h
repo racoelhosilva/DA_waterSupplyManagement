@@ -21,6 +21,7 @@ public:
     void setHidden(bool hidden);
 
     Edge<std::string> *addEdge(Vertex<std::string> *dest, double w) override;
+    std::string getDescription() const;
 
     bool operator==(const ServicePoint &sp) const;
 

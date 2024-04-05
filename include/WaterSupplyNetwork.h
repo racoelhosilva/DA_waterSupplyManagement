@@ -18,16 +18,15 @@ public:
 
     bool parseData(const std::string& reservoirPath, const std::string& stationsPath, const std::string& citiesPath, const std::string& pipesPath);
 
-    void print();
-
     std::vector<ServicePoint*> getServicePoints();
     std::vector<Reservoir*> getReservoirs();
     std::vector<PumpingStation*> getPumpingStations();
     std::vector<DeliverySite*> getDeliverySites();
     ServicePoint *findServicePoint(const std::string &code);
-    Reservoir *findReservoir(const std::string &code);
     DeliverySite *findDeliverySite(const std::string &code);
-    Pipe *findPipe(const std::string &orig, const std::string &dest);
+    Reservoir *findReservoir(const std::string &code);
+    PumpingStation *findPumpingStation(const std::string &code);
+    Pipe *findPipe(const std::string &src, const std::string &dest);
 
     double getMaxFlow(bool theoretical = false);
     double calculateMaxFlowAndAugmentingPathsThroughPipe(Pipe *pipe);
@@ -37,6 +36,15 @@ public:
 
     void unhideAll();
     void hideAllButOneDeliverySite(const std::string &code);
+    void hideReservoir(const std::string &code);
+    void hidePumpingStation(const std::string &code);
+    void hideServicePoint(const std::string &code);
+
+    void hidePipe(Pipe *pipe);
+    void unhidePipe(Pipe *pipe);
+
+    void getMetrics(double &max, double &mean, double &variance);
+
 
     void storeNetwork();
     void loadNetwork();
@@ -64,6 +72,8 @@ private:
     ServicePoint *superSource;
     ServicePoint *superSink;
     std::vector<AugmentingPath> augmentingPaths;
+
+    void print();
 };
 
 

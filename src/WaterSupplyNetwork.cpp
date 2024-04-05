@@ -20,10 +20,12 @@ WaterSupplyNetwork::~WaterSupplyNetwork() {
 }
 
 bool WaterSupplyNetwork::parseData(const string& reservoirPath, const string& stationsPath, const string& citiesPath, const string& pipesPath) {
-    if (!parseReservoir(reservoirPath) || !parseStations(stationsPath) || !parseCities(citiesPath) || !parsePipes(pipesPath))
-        return false;
-    createSuperSourceAndSuperSink();
+    parseReservoir(reservoirPath);
+    parseStations(stationsPath);
+    parseCities(citiesPath);
+    parsePipes(pipesPath);
     //TODO: display error message if any of these functions return false
+    createSuperSourceAndSuperSink();
     return true;
 }
 
@@ -179,6 +181,7 @@ vector<T *> WaterSupplyNetwork::filterVerticesByType() {
         if (r != nullptr)
             res.push_back(r);
     }
+    std::sort(res.begin(), res.end(), [](T* a, T* b) {return a->getCode() < b->getCode();});
     return res;
 }
 
@@ -186,21 +189,25 @@ ServicePoint *WaterSupplyNetwork::findServicePoint(const std::string &code) {
     return dynamic_cast<ServicePoint*>(findVertex(code));
 }
 
-Reservoir *WaterSupplyNetwork::findReservoir(const string &code) {
-    return dynamic_cast<Reservoir*>(findVertex(code));
-}
-
 DeliverySite *WaterSupplyNetwork::findDeliverySite(const std::string &code) {
     return dynamic_cast<DeliverySite*>(findVertex(code));
 }
 
-Pipe *WaterSupplyNetwork::findPipe(const std::string &orig, const std::string &dest) {
-    ServicePoint *origSp = findServicePoint(orig);
-    if (origSp == nullptr)
+Reservoir *WaterSupplyNetwork::findReservoir(const std::string &code) {
+    return dynamic_cast<Reservoir*>(findVertex(code));
+}
+
+PumpingStation *WaterSupplyNetwork::findPumpingStation(const std::string &code) {
+    return dynamic_cast<PumpingStation*>(findVertex(code));
+}
+
+Pipe *WaterSupplyNetwork::findPipe(const std::string &src, const std::string &dest) {
+    ServicePoint *srcSp = findServicePoint(src);
+    if (srcSp == nullptr)
         return nullptr;
-    for (Pipe *p: origSp->getAdj()) {
-        if (p->getDest()->getCode() == dest)
-            return p;
+    for (Pipe* pipe: srcSp->getAdj()) {
+        if (pipe->getDest()->getCode() == dest)
+            return pipe;
     }
     return nullptr;
 }
@@ -362,9 +369,7 @@ void WaterSupplyNetwork::edmondsKarpBfs(ServicePoint *srcSp) {
         spQueue.pop();
 
         for (Pipe *p: u->getAdj()) {
-            if (p->isHidden())
-                continue;
-            if (p->getRemainingFlow() <= 0)
+            if (p->isHidden() || p->getRemainingFlow() <= 0)
                 continue;
             v = p->getDest();
             if (v->isHidden())
@@ -377,7 +382,7 @@ void WaterSupplyNetwork::edmondsKarpBfs(ServicePoint *srcSp) {
         }
 
         for (Pipe *p: u->getIncoming()) {
-            if (p->getFlow() <= 0)
+            if (p->isHidden() || p->getFlow() <= 0)
                 continue;
             v = p->getOrig();
             if (v->isHidden())
@@ -443,6 +448,32 @@ void WaterSupplyNetwork::hideAllButOneDeliverySite(const string &code) {
     for (DeliverySite *ds: getDeliverySites()) {
         ds->setHidden(ds->getCode() != code);
     }
+}
+
+void WaterSupplyNetwork::hideReservoir(const string &code) {
+    for (Reservoir *r: getReservoirs()) {
+        r->setHidden(r->getCode() == code);
+    }
+}
+
+void WaterSupplyNetwork::hidePumpingStation(const std::string &code) {
+    for (PumpingStation *p: getPumpingStations()) {
+        p->setHidden(p->getCode() == code);
+    }
+}
+
+void WaterSupplyNetwork::hideServicePoint(const string &code) {
+    for (ServicePoint *sp: getServicePoints()) {
+        sp->setHidden(sp->getCode() == code);
+    }
+}
+
+void WaterSupplyNetwork::hidePipe(Pipe *pipe) {
+    pipe->setHidden(true);
+}
+
+void WaterSupplyNetwork::unhidePipe(Pipe *pipe) {
+    pipe->setHidden(false);
 }
 
 void WaterSupplyNetwork::destroySuperSourceAndSuperSink() {
@@ -565,4 +596,42 @@ void WaterSupplyNetwork::print() {
             }
         }
     }
+}
+
+
+void compute_metrics(const vector<double> &v, double &max, double &mean, double &variance) {
+    max = 0, mean = 0, variance = 0;
+
+    // Compute max and mean
+    for (double value: v) {
+        mean += value;
+        if(value > max) max = value;
+    }
+    mean /= (double)v.size();
+
+    // Compute variance
+    for(double value: v) {
+        variance += (value - mean) * (value - mean);
+    }
+    variance /= (double)v.size();
+}
+
+
+void WaterSupplyNetwork::getMetrics(double &max, double &mean, double &variance){
+    vector<double> differences;
+
+    for(ServicePoint *v: getServicePoints()) {
+        for(Pipe *p: v->getAdj()) {
+            p->setHidden(p->getReverse() != nullptr && p->getFlow() <= 0 && !(p->getReverse()->isHidden()));
+        }
+    }
+
+    for (ServicePoint *v: getServicePoints()) {
+        for (Pipe *p: v->getAdj()) {
+            if(p->isHidden()) continue;
+            differences.push_back(p->getCapacity() - p->getFlow());
+        }
+    }
+
+    compute_metrics(differences, max, mean, variance);
 }
