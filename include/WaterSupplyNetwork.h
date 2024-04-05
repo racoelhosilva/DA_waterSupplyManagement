@@ -47,7 +47,7 @@ public:
     void unhidePipe(Pipe *pipe);
 
     void getMetrics(double &max, double &mean, double &variance);
-
+    void balance(double mean);
 
     void storeNetwork();
     void loadNetwork();
@@ -65,6 +65,7 @@ private:
     void edmondsKarp(ServicePoint *source, ServicePoint *sink, bool savePaths = false);
     void edmondsKarpBfs(ServicePoint* src);
     AugmentingPath reduceAugmentingPath(ServicePoint *source, ServicePoint* sink);
+    void subtractAugmentingPath(const AugmentingPath& augmentingPath, double maxToRemove);
     void subtractAugmentingPaths();
     double recalculateMaxFlow();
     void unselectAllAugmentingPaths();
