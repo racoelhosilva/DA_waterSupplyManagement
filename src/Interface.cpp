@@ -46,7 +46,7 @@ void Interface::printMenuOptions(const std::vector<std::string> &options, int ch
     }
 }
 
-void Interface::printOptionsPages(const std::vector<std::string> &options, const std::string &title, int choice, int page) {
+void Interface::printOptionsPages(const std::vector<std::string> &options, const std::string &title, int choice, int page, int num_pages) {
     std::cout << "│" << std::string(4, ' ') << std::setw(74) << std::left << title << "│" << '\n';
 
 
@@ -85,6 +85,28 @@ void Interface::printOptionsPages(const std::vector<std::string> &options, const
     else {
         std::cout << "│" << RED << " [0] " << RESET << FAINT << std::setw(73) << std::left << options[0] << RESET << "│" << '\n';
     }
+
+    int leftSpacing = 32, rightSpacing = 33;
+    if (page + 1 >= 10){
+        rightSpacing--;
+    }
+    if (num_pages + 1 >= 10){
+        rightSpacing--;
+    }
+
+    std::string leftMark = "<   ", rightMark = "   >";
+
+    if (page == 0){
+        leftMark = "    ";
+    }
+    if (page == num_pages){
+        rightMark = "    ";
+    }
+    std::cout << "│" << FAINT << std::string(leftSpacing, ' ')
+              << leftMark << RESET
+              << page+1 << " / " << num_pages+1
+              << FAINT << rightMark
+              << RESET << std::string(rightSpacing, ' ') << "│" << '\n';
 }
 
 void Interface::printWriteBuffer(const std::string &buffer){
@@ -553,7 +575,7 @@ DeliverySite * Interface::citySelection() {
     do {
         system("cls || clear");
         printTop();
-        printOptionsPages(options, title, choice, page);
+        printOptionsPages(options, title, choice, page, page_limit);
         printBottom();
         press = getNextPress();
 
@@ -588,7 +610,7 @@ Reservoir * Interface::reservoirSelection() {
     do {
         system("cls || clear");
         printTop();
-        printOptionsPages(options, title, choice, page);
+        printOptionsPages(options, title, choice, page, page_limit);
         printBottom();
         press = getNextPress();
 
@@ -623,7 +645,7 @@ PumpingStation * Interface::pumpingStationSelection() {
     do {
         system("cls || clear");
         printTop();
-        printOptionsPages(options, title, choice, page);
+        printOptionsPages(options, title, choice, page, page_limit);
         printBottom();
         press = getNextPress();
 
@@ -647,6 +669,9 @@ ServicePoint * Interface::servicePointSelection() {
             {"Back"};
     std::vector<std::string> codes = {""};
     for (ServicePoint* sp : wsn.getServicePoints()){
+        if (sp->getId() == 0){
+            continue;
+        }
         if (sp->getAdj().size() == 1){
             if (sp->getAdj()[0]->getDest()->getCode() == "__super_sink__"){
                 continue;
@@ -663,7 +688,7 @@ ServicePoint * Interface::servicePointSelection() {
     do {
         system("cls || clear");
         printTop();
-        printOptionsPages(options, title, choice, page);
+        printOptionsPages(options, title, choice, page, page_limit);
         printBottom();
         press = getNextPress();
 
@@ -698,7 +723,7 @@ ServicePoint * Interface::servicePointSelection(ServicePoint *src) {
     do {
         system("cls || clear");
         printTop();
-        printOptionsPages(options, title, choice, page);
+        printOptionsPages(options, title, choice, page, page_limit);
         printBottom();
         press = getNextPress();
 
