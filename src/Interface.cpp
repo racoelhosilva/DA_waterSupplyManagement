@@ -532,7 +532,7 @@ void Interface::datasetMenu() {
             wsn.parseData("../dataset/Reservoir.csv","../dataset/Stations.csv","../dataset/Cities.csv","../dataset/Pipes.csv");
             break;
         default:
-            exit(0);
+            exitMenu();
     }
 }  
 
@@ -647,6 +647,11 @@ ServicePoint * Interface::servicePointSelection() {
             {"Back"};
     std::vector<std::string> codes = {""};
     for (ServicePoint* sp : wsn.getServicePoints()){
+        if (sp->getAdj().size() == 1){
+            if (sp->getAdj()[0]->getDest()->getCode() == "__super_sink__"){
+                continue;
+            }
+        }
         if (!sp->getAdj().empty())
             options.push_back(sp->getCode());
     }

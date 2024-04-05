@@ -60,5 +60,4 @@ private:
     std::string fileName = "../output.txt";
 };
 
-
 #endif //DA_WATERSUPPLYMANAGEMENT_INTERFACE_H

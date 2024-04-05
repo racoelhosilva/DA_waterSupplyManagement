@@ -72,6 +72,8 @@ private:
     ServicePoint *superSource;
     ServicePoint *superSink;
     std::vector<AugmentingPath> augmentingPaths;
+
+    void print();
 };
 
 

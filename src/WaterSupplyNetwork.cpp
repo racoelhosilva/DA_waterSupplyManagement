@@ -25,6 +25,7 @@ bool WaterSupplyNetwork::parseData(const string& reservoirPath, const string& st
     parseCities(citiesPath);
     parsePipes(pipesPath);
     //TODO: display error message if any of these functions return false
+    createSuperSourceAndSuperSink();
     return true;
 }
 

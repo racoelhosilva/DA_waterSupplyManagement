@@ -57,3 +57,7 @@ void ServicePoint::setHidden(bool hidden) {
 bool ServicePoint::operator==(const ServicePoint &sp) const {
     return getCode() == sp.getCode();
 }
+
+std::string ServicePoint::getDescription() const {
+    return getCode();
+}

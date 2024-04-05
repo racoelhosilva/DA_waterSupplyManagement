@@ -12,7 +12,7 @@ public:
     double getMaxDelivery() const;
     double getDelivery() const;
 
-    std::string getDescription() const override;
+    std::string getDescription() const;
 
 private:
     std::string name;

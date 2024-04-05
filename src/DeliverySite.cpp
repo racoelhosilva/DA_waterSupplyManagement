@@ -21,8 +21,6 @@ double DeliverySite::getSupplyRate() const {
     double rate = 0;
     for (Pipe *pipe: ServicePoint::getIncoming())
         rate += pipe->getFlow();
-    for (Pipe *pipe: ServicePoint::getAdj())
-        rate -= pipe->getFlow();
     return rate;
 }
 
