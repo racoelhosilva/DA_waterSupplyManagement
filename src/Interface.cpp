@@ -16,8 +16,17 @@ bool Interface::init(){
     std::ofstream ofs;
     ofs.open(fileName, std::ofstream::out | std::ofstream::trunc);
     ofs.close();
-    system("cls || clear");
+    clearScreen();
     return true;
+}
+
+void Interface::clearScreen() {
+#ifdef __unix__
+    system("clear");
+#else
+    // assume windows
+    system("cls");
+#endif
 }
 
 void Interface::printMenuOptions(const std::vector<std::string> &options, int choice) {
@@ -157,7 +166,7 @@ void Interface::waitInput() {
 }
 
 void Interface::printTitle(const std::string &title) {
-    system("cls || clear");
+    clearScreen();
     cout << '\n' << std::string((width/2) - (title.size()/2), ' ') << BOLD << BLUE << title << RESET << "\n\n";
 }
 
@@ -257,7 +266,7 @@ void Interface::mainMenu() {
     int choice = 1;
     Press press;
     do {
-        system("cls || clear");
+        clearScreen();
         printTop();
         printMenuOptions(options, choice);
         printBottom();
@@ -461,6 +470,8 @@ void Interface::mainMenu() {
             waitInput();
             break;
         }
+        case 8:
+            readInputText();
         case 9:
             outputToFile = not outputToFile;
             break;
@@ -482,7 +493,7 @@ bool Interface::pipeMenu() {
     int choice = 1;
     Press press;
     do {
-        system("cls || clear");
+        clearScreen();
         printTop();
         printMenuOptions(options, choice);
         printSelectedPipes();
@@ -529,7 +540,7 @@ void Interface::datasetMenu() {
     int choice = 1;
     Press press;
     do {
-        system("cls || clear");
+        clearScreen();
         printTop();
         printMenuOptions(options, choice);
         printBottom();
@@ -571,7 +582,7 @@ DeliverySite * Interface::citySelection() {
     int choice = 1, page = 0, llimit = 1, hlimit = min(11, (int)options.size()), page_limit = ((int)options.size() - 1) / 10;
     Press press;
     do {
-        system("cls || clear");
+        clearScreen();
         printTop();
         printOptionsPages(options, title, choice, page, page_limit);
         printBottom();
@@ -606,7 +617,7 @@ Reservoir * Interface::reservoirSelection() {
     int choice = 1, page = 0, llimit = 1, hlimit = min(11, (int)options.size()), page_limit = ((int)options.size() - 1) / 10;
     Press press;
     do {
-        system("cls || clear");
+        clearScreen();
         printTop();
         printOptionsPages(options, title, choice, page, page_limit);
         printBottom();
@@ -641,7 +652,7 @@ PumpingStation * Interface::pumpingStationSelection() {
     int choice = 1, page = 0, llimit = 1, hlimit = min(11, (int)options.size()), page_limit = ((int)options.size() - 1) / 10;
     Press press;
     do {
-        system("cls || clear");
+        clearScreen();
         printTop();
         printOptionsPages(options, title, choice, page, page_limit);
         printBottom();
@@ -684,7 +695,7 @@ ServicePoint * Interface::servicePointSelection() {
     int choice = 1, page = 0, llimit = 1, hlimit = min(11, (int)options.size()), page_limit = ((int)options.size() - 1) / 10;
     Press press;
     do {
-        system("cls || clear");
+        clearScreen();
         printTop();
         printOptionsPages(options, title, choice, page, page_limit);
         printBottom();
@@ -719,7 +730,7 @@ ServicePoint * Interface::servicePointSelection(ServicePoint *src) {
     int choice = 1, page = 0, llimit = 1, hlimit = min(11, (int)options.size()), page_limit = ((int)options.size() - 1) / 10;
     Press press;
     do {
-        system("cls || clear");
+        clearScreen();
         printTop();
         printOptionsPages(options, title, choice, page, page_limit);
         printBottom();
@@ -745,7 +756,7 @@ std::string Interface::readInputText(){
 
     Press press;
     do {
-        system("cls || clear");
+        clearScreen();
         printTop();
         printWriteBuffer(getBuffer());
         printBottom();

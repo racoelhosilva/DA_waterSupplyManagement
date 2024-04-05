@@ -8,6 +8,8 @@ public:
 
     bool init();
 
+    void clearScreen();
+
     void printMenuOptions(const std::vector<std::string> &options, int choice);
     void printOptionsPages(const std::vector<std::string> &options, const std::string &title, int choice, int page, int num_pages);
     void printTop();
