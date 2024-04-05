@@ -23,6 +23,8 @@ public:
     Edge<std::string> *addEdge(Vertex<std::string> *dest, double w) override;
     virtual std::string getDescription() const = 0;
 
+    bool operator==(const ServicePoint &sp) const;
+
 private:
     int id;
     bool hidden;

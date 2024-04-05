@@ -20,6 +20,7 @@ public:
     bool isSelected() const;
     Edge *getReverse() const;
 
+    void setWeight(double weight);
     void setFlow(double flow);
     void setSelected(bool selected);
     void setReverse(Edge *reverse);
@@ -67,6 +68,11 @@ bool Edge<T>::isSelected() const {
 template <class T>
 Edge<T> *Edge<T>::getReverse() const {
     return reverse;
+}
+
+template<class T>
+void Edge<T>::setWeight(double weight) {
+    Edge::weight = weight;
 }
 
 template <class T>

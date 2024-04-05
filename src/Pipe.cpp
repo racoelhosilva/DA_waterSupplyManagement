@@ -22,7 +22,19 @@ double Pipe::getRemainingFlow() const {
     return getWeight() - getFlow();
 }
 
-bool Pipe::isHidden() {
+const std::vector<AugmentingPath*> &Pipe::getAugmentingPaths() const {
+    return augmentingPaths;
+}
+
+std::vector<AugmentingPath*> &Pipe::getAugmentingPaths() {
+    return augmentingPaths;
+}
+
+bool Pipe::operator==(const Pipe &pipe) const {
+    return getOrig() == pipe.getOrig() && getDest() == pipe.getDest();
+}
+
+bool Pipe::isHidden() const {
     return hidden;
 }
 
@@ -30,6 +42,15 @@ void Pipe::setHidden(bool hidden) {
     this->hidden = hidden;
     if (getReverse() != nullptr)
         getReverse()->hidden = hidden;
+}
+
+void Pipe::setCapacity(double capacity) {
+    setWeight(capacity);
+}
+
+void Pipe::selectAugmentingPaths() const {
+    for (AugmentingPath* path : augmentingPaths)
+        path->setSelected(true);
 }
 
 

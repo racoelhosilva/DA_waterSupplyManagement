@@ -3,9 +3,11 @@
 
 #include "Edge.h"
 #include "ServicePoint.h"
+#include "AugmentingPath.h"
 #include <string>
 
 class ServicePoint;
+class AugmentingPath;
 
 class Pipe : public Edge<std::string> {
 public:
@@ -17,11 +19,19 @@ public:
     ServicePoint *getOrig() const;
     Pipe *getReverse() const;
     double getRemainingFlow() const;
+    bool isHidden() const;
 
-    bool isHidden();
     void setHidden(bool hidden);
+    void setCapacity(double capacity);
+
+    const std::vector<AugmentingPath*> &getAugmentingPaths() const;
+    std::vector<AugmentingPath*> &getAugmentingPaths();
+    void selectAugmentingPaths() const;
+
+    bool operator==(const Pipe &pipe) const;
 
 private:
+    std::vector<AugmentingPath*> augmentingPaths;
     bool hidden;
 };
 
