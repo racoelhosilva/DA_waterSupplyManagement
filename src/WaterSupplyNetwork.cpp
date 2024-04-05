@@ -10,6 +10,7 @@
 #include <limits>
 #include <queue>
 #include <algorithm>
+#include <cmath>
 
 using namespace std;
 
@@ -368,21 +369,26 @@ AugmentingPath WaterSupplyNetwork::reduceAugmentingPath(ServicePoint *source, Se
     return augmentingPath;
 }
 
+void WaterSupplyNetwork::subtractAugmentingPath(const AugmentingPath& augmentingPath, double maxToRemove) {
+    for (auto pair: augmentingPath.getPipes()) {
+        Pipe *p = pair.first;
+        bool incoming = pair.second;
+        double flowToRemove = min(maxToRemove, augmentingPath.getCapacity());
+        p->setFlow(incoming ? p->getFlow() - flowToRemove : p->getFlow() + flowToRemove);
+        if (p->getReverse() != nullptr) {
+            p->getReverse()->setFlow(incoming ? p->getReverse()->getFlow() + flowToRemove :
+                                     p->getReverse()->getFlow() - flowToRemove);
+        } else if (p->getFlow() < 0) {
+            p->selectAugmentingPaths();
+        }
+    }
+}
+
 void WaterSupplyNetwork::subtractAugmentingPaths() {
     for (const AugmentingPath &augmentingPath: augmentingPaths) {
         if (!augmentingPath.isSelected())
             continue;
-        for (auto pair: augmentingPath.getPipes()) {
-            Pipe *p = pair.first;
-            bool incoming = pair.second;
-            p->setFlow(incoming ? p->getFlow() - augmentingPath.getCapacity() : p->getFlow() + augmentingPath.getCapacity());
-            if (p->getReverse() != nullptr) {
-                p->getReverse()->setFlow(incoming ? p->getReverse()->getFlow() + augmentingPath.getCapacity() :
-                                         p->getReverse()->getFlow() - augmentingPath.getCapacity());
-            } else if (p->getFlow() < 0) {
-                p->selectAugmentingPaths();
-            }
-        }
+        subtractAugmentingPath(augmentingPath, numeric_limits<double>::infinity());
     }
 }
 
@@ -602,35 +608,6 @@ void WaterSupplyNetwork::print() {
     }
 }
 
-/*double WaterSupplyNetwork::getMaxFlowWithoutPipes(std::vector<Pipe *> pipes) {
-    getMaxFlow();
-
-    for (Pipe *pipe: pipes)
-        pipe->selectAugmentingPaths();
-    subtractAugmentingPaths();
-    return recalculateMaxFlow();
-
-}*/
-
-/*double WaterSupplyNetwork::getMaxFlowWithoutReservoir(Reservoir *reservoir) {
-    return getMaxFlowWithoutPipes(reservoir->getAdj());
-}*/
-
-/*double WaterSupplyNetwork::getMaxFlowWithoutStation(PumpingStation *station) {
-    return getMaxFlowWithoutPipes(station->getAdj());
-}*/
-
-//std::vector<Pipe *> WaterSupplyNetwork::getCriticalPipesToCity(DeliverySite *city) {
-//    getMaxFlow();
-//
-//    for (Pipe *pipe: city->getIncoming())
-//        for (AugmentingPath *path: pipe->getAugmentingPaths())
-//            for (auto p: path->getPipes())
-//                p.first->selectAugmentingPaths();
-//    subtractAugmentingPaths();
-//    return recalculateMaxFlow();
-//}
-
 void compute_metrics(const vector<double> &v, double &max, double &mean, double &variance) {
     max = 0, mean = 0, variance = 0;
 
@@ -687,6 +664,50 @@ void WaterSupplyNetwork::getMetrics(double &max, double &mean, double &variance)
     for(ServicePoint *v: getServicePoints()) {
         for(Pipe *p: v->getAdj()) {
             p->setHidden(false);
+        }
+    }
+}
+
+void WaterSupplyNetwork::balance(double mean) {
+    double initFlow = getMaxFlow();
+    bool found = true;
+    while (found) {
+        found = false;
+        storeNetwork();
+        vector<Pipe *> pipes;
+
+        for(ServicePoint *sp: getServicePoints()) {
+            for (Pipe *p: sp->getAdj()) {
+                if(p->getFlow() > 0 && p->getCapacity() > 0 && p->getRemainingFlow() <= mean && !(*p->getOrig() == *superSource) && !(*p->getDest() == *superSink))
+                    pipes.push_back(p);
+            }
+        }
+        if (pipes.empty())
+            break;
+
+        sort(pipes.begin(), pipes.end(), [&](Pipe *a, Pipe *b){ return (a->getRemainingFlow() < b->getRemainingFlow() || (a->getRemainingFlow() == b->getRemainingFlow() && a->getCapacity() > b->getCapacity())); });
+
+        Pipe* targetPipe = pipes[0];
+        for (Pipe *targetPipe: pipes) {
+            double originalCapacity = targetPipe->getCapacity();
+            targetPipe->setCapacity(max(originalCapacity - floor(mean), 0.0));
+            if (targetPipe->getReverse() != nullptr)
+                targetPipe->setCapacity(max(originalCapacity - floor(mean), 0.0));
+            double finalFlow = getMaxFlow();
+
+            if (finalFlow < initFlow) {
+                loadNetwork();
+                targetPipe->setCapacity(originalCapacity);
+            } else {
+                found = true;
+                break;
+            }
+        }
+    }
+
+    for (ServicePoint *sp: auxNetwork->getServicePoints()) {
+        for (Pipe *pipe: sp->getAdj()) {
+            findPipe(sp->getCode(), pipe->getDest()->getCode())->setCapacity(pipe->getCapacity());
         }
     }
 }
