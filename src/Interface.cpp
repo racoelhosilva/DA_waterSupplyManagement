@@ -450,13 +450,22 @@ void Interface::mainMenu() {
             break;
         }
         case 7:{
+            wsn.getMaxFlow(false);
             double initialMax, initialMean, initialVariance;
             wsn.getMetrics(initialMax, initialMean, initialVariance);
 
-            //wsn.balance();
+            cout << initialMax << '\t' << initialMean << '\t' << initialVariance << '\n';
 
             double finalMax, finalMean, finalVariance;
-            wsn.getMetrics(finalMax, finalMean, finalVariance);
+            for (int idx = 0; idx < 5; idx++) {
+                wsn.balance(initialMean);
+                wsn.getMetrics(finalMax, finalMean, finalVariance);
+                initialMax = finalMax;
+                initialMean = finalMean;
+                initialVariance = finalVariance;
+                cout << initialMax << '\t' << initialMean << '\t' << initialVariance << '\n';
+            }
+
 
             std::string title = "Balancing Metrics";
             if (outputToFile){
@@ -783,7 +792,7 @@ void Interface::printTable(const vector<int> &colLens, const vector<string> &hea
             string text = (cells[i][j]);
             bool previous = false;
             for (const char &c : text){
-                if (!isalpha(c) && !isblank(c) && !isdigit(c) && (c != '_') && (c != '.')){
+                if (!isalpha(c) && !isblank(c) && !isdigit(c) && (c != '_') && (c != '.') && (c != '+')){
                     if (!previous){
                         formatting++;
                         previous = true;

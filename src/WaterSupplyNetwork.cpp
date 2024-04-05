@@ -630,7 +630,7 @@ void WaterSupplyNetwork::getMetrics(double &max, double &mean, double &variance)
     vector<double> differences;
 
     unhideAllPipes();
-    // TODO: Fix hiding unnecessary pipes
+
     for(ServicePoint *v: getServicePoints()) {
         for(Pipe *p: v->getAdj()) {
             // Hide Super-source or Super-sink
@@ -652,20 +652,13 @@ void WaterSupplyNetwork::getMetrics(double &max, double &mean, double &variance)
     for (ServicePoint *v: getServicePoints()) {
         for (Pipe *p: v->getAdj()) {
             if(p->isHidden()) continue;
-            cout << p->getOrig()->getCode() << '\t' << p->getDest()->getCode() << '\t' << p->getFlow() << '\n';
             differences.push_back(p->getCapacity() - p->getFlow());
         }
     }
-    cout << differences.size() << '\n';
 
     compute_metrics(differences, max, mean, variance);
 
-    // Reset the edges back to normal
-    for(ServicePoint *v: getServicePoints()) {
-        for(Pipe *p: v->getAdj()) {
-            p->setHidden(false);
-        }
-    }
+    unhideAllPipes();
 }
 
 void WaterSupplyNetwork::balance(double mean) {
