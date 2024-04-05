@@ -310,7 +310,7 @@ void Interface::mainMenu() {
                 printTitle(title);
                 cityDisplayComparison({city});
             }
-            wsn.unhideAll();
+            wsn.unhideAllServicePoints();
             waitInput();
             break;
         }
@@ -356,7 +356,7 @@ void Interface::mainMenu() {
                 displayServicePointEffects();
                 printNetworkFlow(networkFlow);
             }
-            wsn.unhideAll();
+            wsn.unhideAllServicePoints();
             waitInput();
             break;
         }
@@ -382,7 +382,7 @@ void Interface::mainMenu() {
                 displayServicePointEffects();
                 printNetworkFlow(networkFlow);
             }
-            wsn.unhideAll();
+            wsn.unhideAllServicePoints();
             waitInput();
             break;
         }
@@ -432,9 +432,7 @@ void Interface::mainMenu() {
                 }
             }
 
-            for (Pipe* pipe : selectedPipes){
-                wsn.unhidePipe(pipe);
-            }
+            wsn.unhideAllPipes();
             selectedPipes.clear();
 
             if (process){

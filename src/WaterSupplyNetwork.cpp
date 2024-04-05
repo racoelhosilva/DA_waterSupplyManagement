@@ -435,11 +435,6 @@ void WaterSupplyNetwork::unhidePipe(Pipe *pipe) {
     pipe->setHidden(false);
 }
 
-void WaterSupplyNetwork::destroySuperSourceAndSuperSink() {
-//    removeVertex("__super_source__");
-//    removeVertex("__super_sink__");
-}
-
 void WaterSupplyNetwork::copyGraph(WaterSupplyNetwork *network1, WaterSupplyNetwork *network2) {
     VertexSet<string> vertexes2 = network2->getVertexSet();
     for (Vertex<string> *v: vertexes2)
@@ -607,22 +602,23 @@ void WaterSupplyNetwork::print() {
     }
 }
 
-double WaterSupplyNetwork::getMaxFlowWithoutPipes(std::vector<Pipe *> pipes) {
+/*double WaterSupplyNetwork::getMaxFlowWithoutPipes(std::vector<Pipe *> pipes) {
     getMaxFlow();
 
     for (Pipe *pipe: pipes)
         pipe->selectAugmentingPaths();
     subtractAugmentingPaths();
     return recalculateMaxFlow();
-}
 
-double WaterSupplyNetwork::getMaxFlowWithoutReservoir(Reservoir *reservoir) {
+}*/
+
+/*double WaterSupplyNetwork::getMaxFlowWithoutReservoir(Reservoir *reservoir) {
     return getMaxFlowWithoutPipes(reservoir->getAdj());
-}
+}*/
 
-double WaterSupplyNetwork::getMaxFlowWithoutStation(PumpingStation *station) {
+/*double WaterSupplyNetwork::getMaxFlowWithoutStation(PumpingStation *station) {
     return getMaxFlowWithoutPipes(station->getAdj());
-}
+}*/
 
 //std::vector<Pipe *> WaterSupplyNetwork::getCriticalPipesToCity(DeliverySite *city) {
 //    getMaxFlow();
