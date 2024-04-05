@@ -9,7 +9,7 @@ public:
     bool init();
 
     void printMenuOptions(const std::vector<std::string> &options, int choice);
-    void printOptionsPages(const std::vector<std::string> &options, const std::string &title, int choice, int page);
+    void printOptionsPages(const std::vector<std::string> &options, const std::string &title, int choice, int page, int num_pages);
     void printTop();
     void printBottom();
     void waitInput();
