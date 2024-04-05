@@ -616,7 +616,7 @@ void compute_metrics(const vector<double> &v, double &max, double &mean, double 
     variance /= (double)v.size();
 }
 
-
+// TODO: Fix this to skip super source and super sink
 void WaterSupplyNetwork::getMetrics(double &max, double &mean, double &variance){
     vector<double> differences;
 
@@ -634,4 +634,11 @@ void WaterSupplyNetwork::getMetrics(double &max, double &mean, double &variance)
     }
 
     compute_metrics(differences, max, mean, variance);
+
+    // Reset the edges back to normal
+    for(ServicePoint *v: getServicePoints()) {
+        for(Pipe *p: v->getAdj()) {
+            p->setHidden(false);
+        }
+    }
 }

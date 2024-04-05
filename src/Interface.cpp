@@ -441,7 +441,7 @@ void Interface::mainMenu() {
             waitInput();
             break;
         }
-        case 8:
+        case 9:
             outputToFile = not outputToFile;
             break;
         case 0:
