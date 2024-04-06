@@ -10,24 +10,77 @@ class Edge;
 template <class T>
 class Vertex {
 public:
+    /**
+     * @brief Constructor of the Vertex class
+     * @param info The information of the vertex
+     */
     explicit Vertex(T info);
+
+    /**
+     * @brief Destructor of the Vertex class
+     */
     virtual ~Vertex();
 
+    /**
+     * @brief Returns the info of the vertex
+     * @return The info of the vertex
+     */
     T getInfo() const;
+
+    /**
+     * @brief Returns the outgoing edges of the vertex
+     * @return Vector of references to the vertex's outgoing edges
+     */
     std::vector<Edge<T> *> getAdj() const;
+
+    /**
+     * @brief Returns if the vertex was visited
+     * @return True if the vertex was set as visited, and false otherwise
+     */
     bool isVisited() const;
+
+    /**
+     * @brief Returns if the vertex is being processed
+     * @return True if the vertex was set as processed, and false otherwise
+     */
     bool isProcessing() const;
-    unsigned int getIndegree() const;
-    double getDist() const;
+
+    /**
+     * @brief Returns the parent's edge that connects to this vertex (auxiliary to graph searches)
+     * @return The parent's edge to this vertex
+     */
     Edge<T> *getPath() const;
+
+    /**
+     * @brief Returns the incoming edges to the vertex
+     * @return Vector of references to the vertex's incoming edges
+     */
     std::vector<Edge<T> *> getIncoming() const;
 
-    void setInfo(T info);
+    /**
+     * @brief Sets if the vertex has been visited
+     * @param visited Whether the vertex was visited or not
+     */
     void setVisited(bool visited);
-    void setProcesssing(bool processing);
-    void setIndegree(unsigned int indegree);
-    void setDist(double dist);
+
+    /**
+     * @brief Sets if the vertex is being processed
+     * @param processing Whether the vertex is being processed or not
+     */
+    void setProcessing(bool processing);
+
+    /**
+     * @brief Sets the parent's edge that connects to this vertex (auxiliary to graph searches)
+     * @param path The parent's edge to this vertex
+     */
     void setPath(Edge<T> *path);
+
+    /**
+     * @brief Adds an outgoing edge from this vertex to dest
+     * @param dest Des
+     * @param w
+     * @return
+     */
     virtual Edge<T> * addEdge(Vertex<T> *dest, double w);
     bool removeEdge(T in);
     void removeOutgoingEdges();
@@ -113,16 +166,6 @@ bool Vertex<T>::isProcessing() const {
 }
 
 template <class T>
-unsigned int Vertex<T>::getIndegree() const {
-    return this->indegree;
-}
-
-template <class T>
-double Vertex<T>::getDist() const {
-    return this->dist;
-}
-
-template <class T>
 Edge<T> *Vertex<T>::getPath() const {
     return this->path;
 }
@@ -133,28 +176,13 @@ std::vector<Edge<T> *> Vertex<T>::getIncoming() const {
 }
 
 template <class T>
-void Vertex<T>::setInfo(T in) {
-    this->info = in;
-}
-
-template <class T>
 void Vertex<T>::setVisited(bool visited) {
     this->visited = visited;
 }
 
 template <class T>
-void Vertex<T>::setProcesssing(bool processing) {
+void Vertex<T>::setProcessing(bool processing) {
     this->processing = processing;
-}
-
-template <class T>
-void Vertex<T>::setIndegree(unsigned int indegree) {
-    this->indegree = indegree;
-}
-
-template <class T>
-void Vertex<T>::setDist(double dist) {
-    this->dist = dist;
 }
 
 template <class T>

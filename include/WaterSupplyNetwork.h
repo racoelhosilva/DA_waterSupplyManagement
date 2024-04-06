@@ -29,9 +29,7 @@ public:
     Pipe *findPipe(const std::string &src, const std::string &dest);
 
     double getMaxFlow(bool theoretical = false);
-//    double calculateMaxFlowAndAugmentingPathsThroughPipe(Pipe *pipe);
-//    double calculateMaxFlowAndAugmentingPathsToCity(DeliverySite *city);
-    double getMaxFlowWithoutPipes(std::vector<Pipe*> pipes);
+    double getMaxFlowWithoutPipes(const std::vector<Pipe*> &pipes);
     double getMaxFlowWithoutReservoir(Reservoir* reservoir);
     double getMaxFlowWithoutStation(PumpingStation* station);
     std::vector<Pipe*> getCriticalPipesToCity(DeliverySite *city);
@@ -46,7 +44,7 @@ public:
     void hidePipe(Pipe *pipe);
     void unhidePipe(Pipe *pipe);
 
-    void getMetrics(double &max, double &mean, double &variance);
+    void getMetrics(std::tuple<double, double, double> &metrics);
     void balance(double mean);
 
     void storeNetwork();
@@ -65,7 +63,7 @@ private:
     void edmondsKarp(ServicePoint *source, ServicePoint *sink, bool savePaths = false);
     void edmondsKarpBfs(ServicePoint* src);
     AugmentingPath reduceAugmentingPath(ServicePoint *source, ServicePoint* sink);
-    void subtractAugmentingPath(const AugmentingPath& augmentingPath, double maxToRemove);
+    void subtractAugmentingPath(const AugmentingPath& augmentingPath);
     void subtractAugmentingPaths();
     double recalculateMaxFlow();
     void unselectAllAugmentingPaths();

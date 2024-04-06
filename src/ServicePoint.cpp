@@ -36,11 +36,11 @@ Pipe *ServicePoint::getPath() const {
     return dynamic_cast<Pipe*>(Vertex::getPath());
 }
 
-Edge<std::string> *ServicePoint::addEdge(Vertex<std::string> *dest, double w) {
-    auto spDest = dynamic_cast<ServicePoint*>(dest);
+Edge<string> *ServicePoint::addEdge(Vertex<string> *dest, double w) {
+    ServicePoint *spDest = dynamic_cast<ServicePoint*>(dest);
     if (spDest == nullptr)
         return nullptr;
-    auto newEdge = new Pipe(this, dest, w);
+    auto newEdge = new Pipe(this, spDest, w);
     adj.push_back(newEdge);
     spDest->incoming.push_back(newEdge);
     return newEdge;

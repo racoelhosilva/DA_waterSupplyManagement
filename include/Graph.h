@@ -12,7 +12,11 @@ using VertexSet = std::unordered_set<Vertex<T>*, VertexHash<T>, VertexHash<T>>;
 template <class T>
 class Graph {
 public:
+    /**
+     * @brief Constructor of the Graph class.
+     */
     Graph();
+
     virtual ~Graph();
 
     Vertex<T> *findVertex(const T &in) const;
