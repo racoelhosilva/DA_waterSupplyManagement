@@ -12,8 +12,8 @@ Custom Datasets can be used in the project. To use them follow these instruction
 The structure should be like:
 ```
 $ tree dataset/
+
   dataset
-    │
     ├──── Reservoir.csv
     ├──── Stations.csv
     ├──── Cities.csv
