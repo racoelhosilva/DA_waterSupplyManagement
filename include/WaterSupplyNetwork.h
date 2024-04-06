@@ -29,7 +29,7 @@ public:
 
     /**
      * @brief Parses the data files and initializes appropriate data structures
-     * @details Complexity://TODO
+     * @details Complexity: O(n), where n is the total number of lines in the files
      * @param reservoirPath Path to reservoirs data file
      * @param stationsPath Path to pumping stations data file
      * @param citiesPath Path to cities (delivery sites) data file
@@ -40,28 +40,28 @@ public:
 
     /**
      * @brief Returns a vector of pointers to all service points in the network
-     * @details Complexity: //TODO
+     * @details Complexity: O(V), where V is the number of vertices
      * @return Vector of pointers to all service points in the network
      */
     std::vector<ServicePoint*> getServicePoints();
 
     /**
      * @brief Returns a vector of pointers to all reservoirs in the network
-     * @details Complexity:
+     * @details Complexity: O(V), where V is the number of vertices
      * @return Vector of pointers to all reservoirs in the network
      */
     std::vector<Reservoir*> getReservoirs();
 
     /**
      * @brief Returns a vector of pointers to all pumping stations
-     * @details Complexity:
+     * @details Complexity: O(V), where V is the number of vertices
      * @return Vector of pointers to all reservoirs in the network
      */
     std::vector<PumpingStation*> getPumpingStations();
 
     /**
      * @brief Returns a vector of pointers to all delivery sites
-     * @details Complexity:
+     * @details Complexity: O(V), where V is the number of vertices
      * @return Vector of pointers to all reservoirs in the network
      */
     std::vector<DeliverySite*> getDeliverySites();
@@ -108,23 +108,27 @@ public:
     Pipe *findPipe(const std::string &src, const std::string &dest);
 
     /**
-     * @brief
-     * @details Complexity:
-     * @param saveAugmentingPaths
-     * @return Max flow
+     * @brief Function to calculate the max flow of the network, using the Edmonds Karp algorithm
+     * @details Complexity: O(V*E^2), where V is the number of vertices in the graph and E the number of edges.
+     * @param saveAugmentingPaths Whether the function should save the augmenting paths found or not
+     * @return The value of the max flow
      */
     double getMaxFlow(bool saveAugmentingPaths = false);
 
     /**
-     * @brief
-     * @details Complexity:
-     * @return
+     * @brief Loads the max flow cached in an auxiliary network, or calculates it and stores it if not previously ran
+     * @details Complexity: O(1) if cached, O(V*E^2) if not cached, where V is the number of vertices in the graph and E
+     * the number of edges.
+     * @return The value of the max flow
      */
     double loadCachedMaxFlow();
 
     /**
-     * @brief Function to calculate the max flow without some of the pipes (optimized)
-     * @details Complexity: //TODO
+     * @brief Function to calculate the max flow without some of the pipes
+     * @details It uses an optimized algorithm that reuses the previously calculated value of the max flow that tries to
+     * remove the flows of augmenting paths to not run the Edmonds Karp from scratch again. Complexity: O(V*E^2), where
+     * V is the number of vertices in the graph and E the number of edges. In a pseudo-polynomial perspective, it has
+     * complexity O(E*f), where f is the difference between the current flow value and the maximum flow of the network.
      * @param pipes Vector of the pipes that shouldn't be considered
      * @return The max flow of the entire network
      */
@@ -132,7 +136,9 @@ public:
 
     /**
      * @brief Function to calculate the max flow without one of the reservoirs (optimized)
-     * @details Complexity: //TODO
+     * @details Complexity: O(V*E^2), where V is the number of vertices in the graph and E the number of edges. In a
+     * pseudo-polynomial perspective, it has complexity O(E*f), where f is the difference between the current flow value
+     * and the maximum flow of the network.
      * @param reservoir Reservoir that shouldn't be considered
      * @return The max flow of the entire network
      */
@@ -140,7 +146,9 @@ public:
 
     /**
      * @brief Function to calculate the max flow without one of the pumping stations (optimized)
-     * @details Complexity: //TODO
+     * @details Complexity: O(V*E^2), where V is the number of vertices in the graph and E the number of edges. In a
+     * pseudo-polynomial perspective, it has complexity O(E*f), where f is the difference between the current flow value
+     * and the maximum flow of the network.
      * @param station Pumping station that shouldn't be considered
      * @return The max flow of the entire network
      */
@@ -148,7 +156,7 @@ public:
 
     /**
      * @brief Function to calculate the max flow without some of the pipes (brute-force)
-     * @details Complexity: //TODO
+     * @details Complexity: O(V*E^2), where V is the number of vertices in the graph and E the number of edges.
      * @param pipes Vector of the pipes that shouldn't be considered
      * @return The max flow of the entire network
      */
@@ -156,7 +164,7 @@ public:
 
     /**
      * @brief Function to calculate the max flow without one of the reservoirs (brute-force)
-     * @details Complexity: //TODO
+     * @details Complexity: O(V*E^2), where V is the number of vertices in the graph and E the number of edges.
      * @param reservoir Reservoir that shouldn't be considered
      * @return The max flow of the entire network
      */
@@ -164,7 +172,9 @@ public:
 
     /**
      * @brief Function to calculate the max flow without one of the pumping stations (brute-force)
-     * @details Complexity: //TODO
+     * @details Complexity: O(V*E^2), where V is the number of vertices in the graph and E the number of edges. In a
+     * pseudo-polynomial perspective, it has complexity O(E*f), where f is the difference between the current flow value
+     * and the maximum flow of the network.
      * @param station Pumping station that shouldn't be considered
      * @return The max flow of the entire network
      */
@@ -172,7 +182,7 @@ public:
 
     /**
      * @brief Function to obtain the critical pipes for a given city
-     * @details Complexity: //TODO
+     * @details Complexity: O(V*E^2), where V is the number of vertices in the graph and E the number of edges.
      * @param city Pointer to the city to be considered for the critical pipes
      * @return Vector containing pointers to all the pipes that are critical for the given city
      */
@@ -192,28 +202,28 @@ public:
 
     /**
      * @brief Marks all but one delivery site as hidden
-     * @details Complexity: //TODO
+     * @details Complexity: O(V), where V is the number of service points in the water supply network
      * @param code String corresponding to the code of the delivery site to not mark as hidden
      */
     void hideAllButOneDeliverySite(const std::string &code);
 
     /**
-     * @brief Marks one reservoir as hidden
-     * @details Complexity: //TODO
+     * @brief Marks one reservoir as hidden and the rest as not hidden
+     * @details Complexity: O(V), where V is the number of vertices in the graph
      * @param code String corresponding to the code of the reservoir to mark as hidden
      */
     void hideReservoir(const std::string &code);
 
     /**
-     * @brief Marks one pumping station as hidden
-     * @details Complexity: //TODO
+     * @brief Marks one pumping station as hidden and the rest as not hidden
+     * @details Complexity: O(V), where V is the number of vertices in the graph
      * @param code String corresponding to the code of the pumping station to mark as hidden
      */
     void hidePumpingStation(const std::string &code);
 
     /**
-     * @brief Marks one service point as hidden
-     * @details Complexity: //TODO
+     * @brief Marks one service point as hidden and the rest as not hidden
+     * @details Complexity: O(V), where V is the number of vertices in the graph
      * @param code String corresponding to the code of the service point to mark as hidden
      */
     void hideServicePoint(const std::string &code);
@@ -241,12 +251,21 @@ public:
 
     /**
      * @brief Heuristic algorithm to balance the flow between the pipes on the network, whilst keeping the total flow
-     * @details Complexity: O(V*E^3*C), where V is number of service points, E is the number of pipes, and C is the total sum capacity of the graph
+     * @details Complexity: O(V*E^3*C), where V is number of service points, E is the number of pipes, and C is the total sum of capacities of the pipes.
      * @param value Reference value used to update the flow in each pipe. The smaller the value, the more precise the results are but the algorithm is slower.
      */
     void balance(double value);
 
+    /**
+     * @brief Store the network from the main graph to the auxiliary graph
+     * @details Complexity: O(E), where E is the number of edges in the graph
+     */
     void storeNetwork();
+
+    /**
+     * @brief Load the network from an auxiliary graph to the main graph
+     * @details Complexity: O(E), where E is the number of edges in the graph
+     */
     void loadNetwork();
 
 private:
@@ -295,28 +314,86 @@ private:
      * @brief Creates a super source and a super sink
      * @details If createPipes is set to true, it also creates the pipes that connects them to the reservoirs and
      * delivery sites. Complexity: O(1)
-     * @param createPipes
+     * @param createPipes Whether the function should create the pipes or not
      */
     void createSuperSourceAndSuperSink(bool createPipes = true);
 
     /**
-     * @brief
-     * @param source
-     * @param sink
-     * @param savePaths
+     * @brief Performs the Edmonds Karp algorithm on the network, obtaining the max flow from the source to the sink
+     * @param source Reference to the source service point
+     * @param sink Reference to the sink vertex
+     * @param savePaths Whether the function should save the augmenting paths or not
      */
     void edmondsKarp(ServicePoint *source, ServicePoint *sink, bool savePaths = false);
+
+    /**
+     * @brief Function auxiliar to edmondsKarp that performs the BFS algorithm to find an augmenting path
+     * @details Complexity: O(E), where E is the number of edges in the graph
+     * @param srcSp Reference to the source service point
+     * @param sinkSp Reference to the sink service point
+     */
     void edmondsKarpBfs(ServicePoint* srcSp, ServicePoint *sinkSp);
+
+    /**
+     * @brief Reduces the calculated augmenting path and returns it
+     * @details Complexity: O(V), where V is the number of vertices in the graph
+     * @param source Reference to the source vertex
+     * @param sink Reference to the sink vertex
+     * @return The augmenting path
+     */
     AugmentingPath reduceAugmentingPath(ServicePoint *source, ServicePoint* sink);
+
+    /**
+     * @brief Subtracts the flow of the augmenting path from the network
+     * @details It also selects the augmenting paths that pass through a pipe, if it becomes with a negative flow.
+     * Complexity: O(V) amortized (O(V*E) worst case), where V is the number of vertices in the graph and E the number
+     * of edges.
+     * @param augmentingPath Augmenting path to subtract
+     */
     void subtractAugmentingPath(const AugmentingPath& augmentingPath);
+
+    /**
+     * @brief Subtracts the flow of all selected augmenting paths from the network
+     *
+     * @details Complexity: O(V*E), where V is the number of vertices in the graph and E the number of edges.
+     */
     void subtractAugmentingPaths();
+
+    /**
+     * @brief Recalculates the rest of the possible max flow on top of the network's current flow, without resetting it.
+     * @details Complexity: O(V*E^2), where V is the number of vertices in the graph and E the number of edges. In a
+     * pseudopolinomial perspective, it has complexity O(E*f), where f is the difference between the current flow value
+     * and the maximum flow of the network.
+     * @return The new max flow value
+     */
     double recalculateMaxFlow();
+
+    /**
+     * @brief Unselects all the augmenting paths.
+     * @details Complexity: O(n), where n is the number of augmenting paths (worst case O(V*E), where V is the number of
+     * vertices and E the number of edges in the graph).
+     */
     void unselectAllAugmentingPaths();
 
+    /**
+     * @brief Copies the graph and the flows from one network to another
+     * @param network1 Source network
+     * @param network2 Destination network
+     * @details Complexity: O(E), where E is the number of edges in the graph.
+     */
     void copyGraph(WaterSupplyNetwork *network1, WaterSupplyNetwork *network2);
+
+    /**
+     * @brief Copies the flows from one network to another
+     * @param network1 Source network
+     * @param network2 Destination network
+     * @details Complexity: O(E), where E is the number of edges in the graph.
+     */
     void copyFlows(WaterSupplyNetwork *network1, WaterSupplyNetwork *network2);
 
-
+    /**
+     * @brief Pointer to auxiliary network, used to store the normal max flow
+     */
     WaterSupplyNetwork *maxFlowNetwork;
     ServicePoint *superSource;
     ServicePoint *superSink;

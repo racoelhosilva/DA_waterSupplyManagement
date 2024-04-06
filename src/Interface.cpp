@@ -11,8 +11,6 @@
 
 using namespace std;
 
-// std::sort(res.begin(), res.end(), [](T* a, T* b) {return a->getCode() < b->getCode();});
-
 bool Interface::init(){
     this->wsn = WaterSupplyNetwork();
     if (!datasetMenu())
@@ -827,7 +825,13 @@ bool Interface::datasetMenu() {
         default:
             exitMenu();
     }
-}  
+}
+
+std::vector<ServicePoint *> Interface::getSortedServicePoints(){
+    vector<ServicePoint *> res = wsn.getServicePoints();
+    std::sort(res.begin(), res.end(), [](ServicePoint* a, ServicePoint* b) {return a->getCode() < b->getCode();});
+    return res;
+}
 
 DeliverySite * Interface::citySelection() {
     initCapture();
@@ -835,7 +839,9 @@ DeliverySite * Interface::citySelection() {
     std::vector<std::string> options =
             {"Back"};
     std::vector<std::string> codes = {""};
-    for (DeliverySite* ds : wsn.getDeliverySites()){
+    for (ServicePoint* sp : getSortedServicePoints()){
+        auto *ds = dynamic_cast<DeliverySite *>(sp);
+        if (ds == nullptr) continue;
         options.push_back(ds->getCity());
         codes.push_back(ds->getCode());
     }
@@ -869,7 +875,9 @@ Reservoir * Interface::reservoirSelection() {
     std::vector<std::string> options =
             {"Back"};
     std::vector<std::string> codes = {""};
-    for (Reservoir* r : wsn.getReservoirs()){
+    for (ServicePoint* sp : getSortedServicePoints()){
+        auto *r = dynamic_cast<Reservoir *>(sp);
+        if (r == nullptr) continue;
         options.push_back(r->getName());
         codes.push_back(r->getCode());
     }
@@ -904,7 +912,9 @@ PumpingStation * Interface::pumpingStationSelection() {
     std::vector<std::string> options =
             {"Back"};
     std::vector<std::string> codes = {""};
-    for (PumpingStation* p : wsn.getPumpingStations()){
+    for (ServicePoint* sp : getSortedServicePoints()){
+        auto *p = dynamic_cast<PumpingStation *>(sp);
+        if (p == nullptr) continue;
         options.push_back(to_string(p->getId()));
         codes.push_back(p->getCode());
     }
@@ -938,8 +948,7 @@ ServicePoint * Interface::allServicePointSelection() {
     std::cout << HIDE_CURSOR;
     std::vector<std::string> options =
             {"Back"};
-    std::vector<std::string> codes = {""};
-    for (ServicePoint* sp : wsn.getServicePoints()){
+    for (ServicePoint* sp : getSortedServicePoints()){
         options.push_back(sp->getCode());
     }
     std::string title = "Choose a service point:";
@@ -972,8 +981,7 @@ ServicePoint * Interface::servicePointSelection() {
     std::cout << HIDE_CURSOR;
     std::vector<std::string> options =
             {"Back"};
-    std::vector<std::string> codes = {""};
-    for (ServicePoint* sp : wsn.getServicePoints()){
+    for (ServicePoint* sp : getSortedServicePoints()){
         if (sp->getId() == 0){
             continue;
         }
@@ -1015,7 +1023,6 @@ ServicePoint * Interface::servicePointSelection(ServicePoint *src) {
     std::cout << HIDE_CURSOR;
     std::vector<std::string> options =
             {"Back"};
-    std::vector<std::string> codes = {""};
     for (Pipe *p : src->getAdj()){
         ServicePoint *sp = p->getDest();
         options.push_back(sp->getCode());
