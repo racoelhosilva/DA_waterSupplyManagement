@@ -305,8 +305,11 @@ void Interface::mainMenu() {
              "Maximum Delivery for Specific City",
              "Cities in Deficit",
              "Test Reservoir Out of Commission",
+             "Test Reservoir Out of Commission (Brute-Force)",
              "Test Pumping Stations Out of Service",
+             "Test Pumping Stations Out of Service (Brute-Force)",
              "Test Pipe Failures",
+             "Test Pipe Failures (Brute-Force)",
              "Critical Pipes for Specific City",
              "Network Balancing",
              "Display Network Information",
@@ -425,6 +428,31 @@ void Interface::mainMenu() {
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
             }
+            Reservoir *r = reservoirSelection();
+            if (r == nullptr){
+                break;
+            }
+            double networkFlow = wsn.getMaxFlowWithoutReservoir(r);
+            std::string title = "Max Flow without Reservoir " + r->getCode();
+            if (outputToFile){
+                saveAllMaxFlowToFile(title);
+            }
+            else {
+                printTitle(title);
+                displayServicePointEffects();
+                printNetworkFlow(networkFlow);
+            }
+            wsn.unhideAllServicePoints();
+            waitInput();
+            break;
+        }
+        case 6:{
+            if (cityToDefaultFlow.empty()){
+                defaultNetworkFlow = wsn.getMaxFlow();
+                for (DeliverySite *ds : wsn.getDeliverySites()){
+                    cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
+                }
+            }
             PumpingStation *p = pumpingStationSelection();
             if (p == nullptr){
                 break;
@@ -443,7 +471,32 @@ void Interface::mainMenu() {
             waitInput();
             break;
         }
-        case 6:{
+        case 7:{
+            if (cityToDefaultFlow.empty()){
+                defaultNetworkFlow = wsn.getMaxFlow();
+                for (DeliverySite *ds : wsn.getDeliverySites()){
+                    cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
+                }
+            }
+            PumpingStation *p = pumpingStationSelection();
+            if (p == nullptr){
+                break;
+            }
+            double networkFlow = wsn.getMaxFlowWithoutStation(p);
+            std::string title = "Max Flow without Pumping Station " + p->getCode();
+            if (outputToFile) {
+                saveAllMaxFlowToFile(title);
+            }
+            else {
+                printTitle(title);
+                displayServicePointEffects();
+                printNetworkFlow(networkFlow);
+            }
+            wsn.unhideAllServicePoints();
+            waitInput();
+            break;
+        }
+        case 8:{
             if (cityToDefaultFlow.empty()){
                 defaultNetworkFlow = wsn.getMaxFlow();
                 for (DeliverySite *ds : wsn.getDeliverySites()){
@@ -497,7 +550,61 @@ void Interface::mainMenu() {
             }
             break;
         }
-        case 7:{
+        case 9:{
+            if (cityToDefaultFlow.empty()){
+                defaultNetworkFlow = wsn.getMaxFlow();
+                for (DeliverySite *ds : wsn.getDeliverySites()){
+                    cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
+                }
+            }
+
+            ServicePoint *src = servicePointSelection();
+            if (src == nullptr){
+                break;
+            }
+            ServicePoint *dest = servicePointSelection(src);
+            if (dest == nullptr){
+                break;
+            }
+
+            Pipe *p = wsn.findPipe(src->getCode(), dest->getCode());
+            selectedPipes.push_back(p);
+
+            bool process = pipeMenu();
+            if (process){
+                double networkFlow = wsn.getMaxFlowWithoutPipes(selectedPipes);
+                std::string title = "Max Flow without Pipes";
+                if (outputToFile){
+                    title.append(": ");
+                    int count = 0;
+                    for (Pipe* pipe : selectedPipes){
+                        if (count != 0){
+                            title.append(", ");
+                        }
+                        title.append(pipe->getOrig()->getCode());
+                        title.append(" -> ");
+                        title.append(pipe->getDest()->getCode());
+                        count++;
+                    }
+                    saveAllMaxFlowToFile(title);
+                }
+                else {
+                    printTitle(title);
+                    displayServicePointEffects();
+                    printHiddenPipes();
+                    printNetworkFlow(networkFlow);
+                }
+            }
+
+            wsn.unhideAllPipes();
+            selectedPipes.clear();
+
+            if (process){
+                waitInput();
+            }
+            break;
+        }
+        case 10:{
             if (cityToDefaultFlow.empty()){
                 defaultNetworkFlow = wsn.getMaxFlow();
                 for (DeliverySite *ds : wsn.getDeliverySites()){
@@ -521,7 +628,7 @@ void Interface::mainMenu() {
             waitInput();
             break;
         }
-        case 8:{
+        case 11:{
             wsn.getMaxFlow();
             std::vector<std::tuple<double, double, double>> allMetrics;
             std::tuple<double, double, double> metrics;
@@ -565,10 +672,10 @@ void Interface::mainMenu() {
             waitInput();
             break;
         }
-        case 9:
+        case 12:
             informationMenu();
             break;
-        case 10:
+        case 13:
             outputToFile = not outputToFile;
             break;
         case 0:
