@@ -6,6 +6,14 @@
 
 class DeliverySite : public ServicePoint {
 public:
+    /**
+     * Constructor of the DeliverySite class
+     * @param city City of the delivery site
+     * @param id Unique identifier of the delivery site
+     * @param code Code of the delivery site
+     * @param demand Rate demand or need of delivery site in m^3/sec
+     * @param population Total population of the delivery site
+     */
     DeliverySite(const std::string &city, int id, const std::string &code, double demand, int population);
 
     const std::string &getCity() const;

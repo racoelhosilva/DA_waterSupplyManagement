@@ -509,7 +509,6 @@ void WaterSupplyNetwork::loadNetwork() {
 }
 
 double WaterSupplyNetwork::getMaxFlowWithoutPipes(const std::vector<Pipe *> &pipes) {
-    unhideAllPipes();
     getMaxFlow();
     storeNetwork();
 
@@ -517,7 +516,7 @@ double WaterSupplyNetwork::getMaxFlowWithoutPipes(const std::vector<Pipe *> &pip
         pipe->selectAugmentingPaths();
         pipe->setHidden(true);
         if (pipe->getReverse() != nullptr)
-            pipe->setHidden(true);
+            pipe->getReverse()->setHidden(true);
     }
     subtractAugmentingPaths();
     return recalculateMaxFlow();
@@ -532,7 +531,6 @@ double WaterSupplyNetwork::getMaxFlowWithoutStation(PumpingStation *station) {
 }
 
 std::vector<Pipe *> WaterSupplyNetwork::getCriticalPipesToCity(DeliverySite *city) {
-    unhideAllPipes();
     getMaxFlow();
     storeNetwork();
 
@@ -543,29 +541,38 @@ std::vector<Pipe *> WaterSupplyNetwork::getCriticalPipesToCity(DeliverySite *cit
             pipe->setSelected(false);
         }
     }
-    for (Pipe *pipe: city->getIncoming())
-        for (AugmentingPath *path: pipe->getAugmentingPaths())
-            for (auto p: path->getPipes())
-                p.first->setSelected(true);
+    for (Pipe *pipe: city->getIncoming()) {
+        for (AugmentingPath *path: pipe->getAugmentingPaths()) {
+            for (auto pair: path->getPipes()) {
+                Pipe* p = pair.first;
+                p->setSelected(true);
+            }
+        }
+    }
     for (ServicePoint *sp: getServicePoints()) {
-        for (Pipe *pipe: sp->getAdj())
+        for (Pipe *pipe: sp->getAdj()) {
+            if (!pipe->isSelected() || *pipe->getOrig() == *superSource || *pipe->getDest() == *superSink)
+                continue;
             possiblePipes.push_back(pipe);
+        }
     }
 
     for (Pipe *pipe: possiblePipes) {
         loadNetwork();
         unselectAllAugmentingPaths();
-        unhideAllPipes();
         pipe->selectAugmentingPaths();
         subtractAugmentingPaths();
         pipe->setHidden(true);
         if (pipe->getReverse() != nullptr)
             pipe->setHidden(true);
         recalculateMaxFlow();
+        pipe->setHidden(false);
+        if (pipe->getReverse() != nullptr)
+            pipe->setHidden(false);
         if (city->getSupplyRate() < auxNetwork->findDeliverySite(city->getCode())->getSupplyRate())
             res.push_back(pipe);
     }
-    return possiblePipes;
+    return res;
 }
 
 // TODO: Remove this function

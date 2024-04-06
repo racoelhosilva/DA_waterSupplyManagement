@@ -34,18 +34,28 @@ void Interface::printMenuOptions(const std::vector<std::string> &options, int ch
     std::cout << "│" << std::string(4, ' ') << std::setw(74) << std::left << options[options.size()-1] << "│" << '\n';
 
     for (int idx = 1; idx < options.size() - 2; idx++){
+        int space = 73;
+        if (idx >= 10){
+            space--;
+        }
         if (choice == idx){
-            std::cout << "│" << BOLD << GREEN << " [" << idx << "] " << RESET << BOLD << std::setw(73) << std::left << options[idx] << RESET << "│" << '\n';
+            std::cout << "│" << BOLD << GREEN << " [" << idx << "] " << RESET << BOLD << std::setw(space) << std::left << options[idx] << RESET << "│" << '\n';
         }
         else {
-            std::cout << "│" << GREEN << " [" << idx << "] " << RESET << FAINT << std::setw(73) << std::left << options[idx] << RESET << "│" << '\n';
+            std::cout << "│" << GREEN << " [" << idx << "] " << RESET << FAINT << std::setw(space) << std::left << options[idx] << RESET << "│" << '\n';
         }
     }
+
+    int space = 73;
+    if (options.size() - 2 >= 10){
+        space--;
+    }
+
     if (choice == options.size()-2){
-        std::cout << "│" << BOLD << YELLOW << " [" << options.size()-2 << "] " << RESET << BOLD << std::setw(73) << std::left << options[options.size()-2] << RESET "│" << '\n';
+        std::cout << "│" << BOLD << YELLOW << " [" << options.size()-2 << "] " << RESET << BOLD << std::setw(space) << std::left << options[options.size()-2] << RESET "│" << '\n';
     }
     else {
-        std::cout << "│" << YELLOW << " [" << options.size()-2 << "] " << RESET << FAINT << std::setw(73) << std::left << options[options.size()-2] << RESET << "│" << '\n';
+        std::cout << "│" << YELLOW << " [" << options.size()-2 << "] " << RESET << FAINT << std::setw(space) << std::left << options[options.size()-2] << RESET << "│" << '\n';
     }
 
     if (choice == 0){
@@ -191,7 +201,7 @@ void Interface::printTitle(const std::string &title) {
 }
 
 void Interface::printTitleNoClear(const std::string &title) {
-    cout << '\n' << std::string((width/2) - (title.size()/2), ' ') << BOLD << BLUE << title << RESET << "\n\n";
+    cout << '\n' << std::string((width/2) - (title.size()/2), ' ') << BOLD << CYAN << title << RESET << "\n\n";
 }
 
 void Interface::printNetworkFlow(double flow, bool compare) {
@@ -262,6 +272,16 @@ void Interface::saveDeficitsToFile(const std::string& title) {
     output.close();
 }
 
+void Interface::saveCriticalPipesToFile(const std::string& title, const std::vector<Pipe *> pipes) {
+    std::ofstream output;
+    output.open(fileName, std::ios::app);
+    output << "===>  " << title << '\n';
+    for (auto p : pipes){
+        output << p->getOrig() << ',' << p->getDest() << '\n';
+    }
+    output.close();
+}
+
 void Interface::saveMetricsToFile(std::tuple<double, double, double> &metrics) {
     std::ofstream output;
     output.open(fileName, std::ios::app);
@@ -287,6 +307,7 @@ void Interface::mainMenu() {
              "Test Reservoir Out of Commission",
              "Test Pumping Stations Out of Service",
              "Test Pipe Failures",
+             "Critical Pipes for Specific City",
              "Network Balancing",
              "Display Network Information",
              outputToFile ? "Set output to Console" : "Set output to File (output.txt)",
@@ -477,6 +498,30 @@ void Interface::mainMenu() {
             break;
         }
         case 7:{
+            if (cityToDefaultFlow.empty()){
+                defaultNetworkFlow = wsn.getMaxFlow();
+                for (DeliverySite *ds : wsn.getDeliverySites()){
+                    cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
+                }
+            }
+            DeliverySite *city = citySelection();
+            if (city == nullptr){
+                break;
+            }
+            vector<Pipe *> pipes = wsn.getCriticalPipesToCity(city);
+            std::string title = "Essential Pipes for City (" + city->getCity() + ")";
+            if (outputToFile){
+                saveCriticalPipesToFile(title, pipes);
+            }
+            else {
+                printTitle(title);
+                displayCriticalPipes(pipes);
+            }
+            wsn.unhideAllServicePoints();
+            waitInput();
+            break;
+        }
+        case 8:{
             wsn.getMaxFlow();
             std::vector<std::tuple<double, double, double>> allMetrics;
             std::tuple<double, double, double> metrics;
@@ -520,10 +565,10 @@ void Interface::mainMenu() {
             waitInput();
             break;
         }
-        case 8:
+        case 9:
             informationMenu();
             break;
-        case 9:
+        case 10:
             outputToFile = not outputToFile;
             break;
         case 0:
@@ -595,7 +640,7 @@ bool Interface::pipeMenu() {
     initCapture();
     std::cout << HIDE_CURSOR;
     std::vector<std::string> options =
-            {"Quit",
+            {"Back",
              "Add more Pipes",
              "Process Operation",
              "Choose your operation:"};
@@ -1102,6 +1147,17 @@ void Interface::displayServicePointEffects() {
             cout << std::string(infoSpacing, ' ') << "There are " << BOLD << YELLOW << cells.size() << RESET << " cities affected!\n";
         }
     }
+}
+
+void Interface::displayCriticalPipes(const std::vector<Pipe *> &pipes) {
+    vector<int> colLens = {20, 20, 16, 16};
+    vector<string> headers = {"Origin", "Destination", "Bidirectional", "Capacity"};
+    vector<vector<string>> cells;
+    for (const Pipe *p : pipes) {
+        cells.push_back({p->getOrig()->getDescription(), p->getDest()->getDescription(),
+                         p->getReverse() == nullptr ? "No" : "Yes", doubleToString(p->getCapacity())});
+    }
+    printTable(colLens, headers, cells);
 }
 
 void Interface::exitMenu() {

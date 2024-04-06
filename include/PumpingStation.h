@@ -8,6 +8,11 @@ class ServicePoint;
 
 class PumpingStation : public ServicePoint {
 public:
+    /**
+     * @brief Constructor of the PumpingStation class
+     * @param id Unique identifier of the pumping station
+     * @param code Code of the pumping station
+     */
     PumpingStation(int id, const std::string &code);
 
     std::string getDescription() const;

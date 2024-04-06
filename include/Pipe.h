@@ -50,14 +50,14 @@ public:
     double getRemainingFlow() const;
 
     /**
-     * @brief Returns if the pipe is hidden
+     * @brief Returns whether the pipe is hidden or not
      * @return True if the pipe was set as hidden, and false otherwise
      */
     bool isHidden() const;
 
     /**
-     * @brief Sets if the edge is being hidden
-     * @param hidden Whether the edge is hidden or not
+     * @brief Sets whether the pipe is hidden or not
+     * @param hidden True to set the pipe as selected, false to set it as unselected
      */
     void setHidden(bool hidden);
 
@@ -68,14 +68,27 @@ public:
     void setCapacity(double capacity);
 
     /**
-     * @brief Returns a vector with pointers to the augmenting paths associated with the pipe
-     * @return Vector with pointers to the augmenting paths associated with the pipe
+     * @brief Returns the augmenting paths associated with the pipe
+     * @return Constant reference to a vector with pointers to the augmenting paths associated with the pipe
      */
     const std::vector<AugmentingPath*> &getAugmentingPaths() const;
 
+    /**
+     * @brief Returns the augmenting paths associated with the pipe
+     * @return Reference to a vector with pointers to the augmenting paths associated with the pipe
+     */
     std::vector<AugmentingPath*> &getAugmentingPaths();
+
+    /**
+     * @brief //TODO
+     */
     void selectAugmentingPaths() const;
 
+    /**
+     * @brief Equality operator
+     * @param pipe The pipe to compare with
+     * @return True if the pipes have the same origin and destination vertices (service points), false otherwise
+     */
     bool operator==(const Pipe &pipe) const;
 
 private:

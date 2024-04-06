@@ -73,7 +73,7 @@ public:
 
     /**
      * @brief Sets if the edge is selected
-     * @param selected Whether the edge is selected or not
+     * @param selected True to set the edge as selected, false to set it as unselected
      */
     void setSelected(bool selected);
 
