@@ -14,8 +14,8 @@ The structure should be like:
 $ tree dataset/
 
   dataset
-    ├──── Cities.csv
-    ├──── Pipes.csv
-    ├──── Reservoir.csv
-    └──── Stations.csv
+    ├── Cities.csv
+    ├── Pipes.csv
+    ├── Reservoir.csv
+    └── Stations.csv
 ```
