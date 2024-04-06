@@ -6,6 +6,9 @@
 
 class ServicePoint;
 
+/**
+ * @brief Class representation of a pumping station in the network
+ */
 class PumpingStation : public ServicePoint {
 public:
     /**
@@ -15,6 +18,11 @@ public:
      */
     PumpingStation(int id, const std::string &code);
 
+    /**
+     * @brief Returns a description of the pumping station
+     * @details Complexity: O(1).
+     * @return String with a description (code) of the pumping station
+     */
     std::string getDescription() const;
 };
 

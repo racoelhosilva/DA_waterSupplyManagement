@@ -9,10 +9,13 @@
 class ServicePoint;
 class AugmentingPath;
 
+/**
+ * @brief Class representation of a pipe in a water supply network
+ */
 class Pipe : public Edge<std::string> {
 public:
     /**
-     * Constructor of the Pipe class
+     * @brief Constructor of the Pipe class
      * @param orig Pointer to the origin service point of the pipe
      * @param dest Pointer to the destination service point of the pipe
      * @param capacity The capacity of the pipe
@@ -74,13 +77,14 @@ public:
     const std::vector<AugmentingPath*> &getAugmentingPaths() const;
 
     /**
-     * @brief Returns the augmenting paths associated with the pipe
+     * @brief Returns the augmenting paths that pass through the pipe
      * @return Reference to a vector with pointers to the augmenting paths associated with the pipe
      */
     std::vector<AugmentingPath*> &getAugmentingPaths();
 
     /**
-     * @brief //TODO
+     * @brief Marks all the augmenting paths that pass through the pipe
+     * @details Complexity: O(n), where n is the number of augmenting paths that pass through the pipe
      */
     void selectAugmentingPaths() const;
 

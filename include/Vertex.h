@@ -7,6 +7,10 @@
 template <class T>
 class Edge;
 
+/**
+ * @brief Class that represents a vertex
+ * @tparam T Type of the vertex's info
+ */
 template <class T>
 class Vertex {
 public:
@@ -118,9 +122,26 @@ protected:
     void deleteEdge(Edge<T> *edge);
 };
 
+/**
+ * @brief Hash functional object class for vertex object.
+ * @tparam T Vertex's info type
+ */
 template <class T>
 struct VertexHash {
+    /**
+     * @brief Returns the hash of a vertex
+     * Complexity: O(1).
+     * @param v Reference to the vertex
+     * @return Hash code of the vertex
+     */
     int operator()(const Vertex<T> *v) const;
+
+    /**
+     * @brief Returns whether two vertices are the same
+     * @param v1 Reference to one vertex
+     * @param v2 Reference to the other vertex
+     * @return True if the two vertices are equal, and false otherwise
+     */
     bool operator()(const Vertex<T> *v1, const Vertex<T> *v2) const;
 };
 

@@ -11,9 +11,12 @@
 
 using namespace std;
 
+// std::sort(res.begin(), res.end(), [](T* a, T* b) {return a->getCode() < b->getCode();});
+
 bool Interface::init(){
     this->wsn = WaterSupplyNetwork();
-    datasetMenu();
+    if (!datasetMenu())
+        return false;
     std::ofstream ofs;
     ofs.open(fileName, std::ofstream::out | std::ofstream::trunc);
     ofs.close();
@@ -316,6 +319,7 @@ void Interface::mainMenu() {
              outputToFile ? "Set output to Console" : "Set output to File (output.txt)",
              "Choose your operation:"};
 
+
     int choice = 1;
     Press press;
     do {
@@ -326,13 +330,14 @@ void Interface::mainMenu() {
         press = getNextPress();
         if (press == UP) {choice -= 1; choice += (options.size()-1);}
         else if (press == DOWN) {choice += 1;}
-            choice = choice % (options.size()-1);
+        choice = choice % (options.size()-1);
     } while (press != RET);
+
 
     endCapture();
     switch (choice) {
         case 1:{
-            double networkFlow = wsn.getMaxFlow();
+            double networkFlow = wsn.loadCachedMaxFlow();
             defaultNetworkFlow = networkFlow;
             if (cityToDefaultFlow.empty()){
                 for (DeliverySite *ds : wsn.getDeliverySites()){
@@ -353,7 +358,7 @@ void Interface::mainMenu() {
         }
         case 2:{
             if (cityToDefaultFlow.empty()){
-                defaultNetworkFlow = wsn.getMaxFlow();
+                defaultNetworkFlow = wsn.loadCachedMaxFlow();
                 for (DeliverySite *ds : wsn.getDeliverySites()){
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
@@ -377,10 +382,9 @@ void Interface::mainMenu() {
             break;
         }
         case 3:{
-            // TODO: should we calculate again? or check first if the values are in the map?
             wsn.getMaxFlow();
             if (cityToDefaultFlow.empty()){
-                defaultNetworkFlow = wsn.getMaxFlow();
+                defaultNetworkFlow = wsn.loadCachedMaxFlow();
                 for (DeliverySite *ds : wsn.getDeliverySites()){
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
@@ -398,7 +402,7 @@ void Interface::mainMenu() {
         }
         case 4:{
             if (cityToDefaultFlow.empty()){
-                defaultNetworkFlow = wsn.getMaxFlow();
+                defaultNetworkFlow = wsn.loadCachedMaxFlow();
                 for (DeliverySite *ds : wsn.getDeliverySites()){
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
@@ -417,13 +421,13 @@ void Interface::mainMenu() {
                 displayServicePointEffects();
                 printNetworkFlow(networkFlow);
             }
-            wsn.unhideAllServicePoints();
+            wsn.unhideAllPipes();
             waitInput();
             break;
         }
         case 5:{
             if (cityToDefaultFlow.empty()){
-                defaultNetworkFlow = wsn.getMaxFlow();
+                defaultNetworkFlow = wsn.loadCachedMaxFlow();
                 for (DeliverySite *ds : wsn.getDeliverySites()){
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
@@ -432,7 +436,7 @@ void Interface::mainMenu() {
             if (r == nullptr){
                 break;
             }
-            double networkFlow = wsn.getMaxFlowWithoutReservoir(r);
+            double networkFlow = wsn.getMaxFlowWithoutReservoirBF(r);
             std::string title = "Max Flow without Reservoir " + r->getCode();
             if (outputToFile){
                 saveAllMaxFlowToFile(title);
@@ -448,7 +452,7 @@ void Interface::mainMenu() {
         }
         case 6:{
             if (cityToDefaultFlow.empty()){
-                defaultNetworkFlow = wsn.getMaxFlow();
+                defaultNetworkFlow = wsn.loadCachedMaxFlow();
                 for (DeliverySite *ds : wsn.getDeliverySites()){
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
@@ -467,13 +471,13 @@ void Interface::mainMenu() {
                 displayServicePointEffects();
                 printNetworkFlow(networkFlow);
             }
-            wsn.unhideAllServicePoints();
+            wsn.unhideAllPipes();
             waitInput();
             break;
         }
         case 7:{
             if (cityToDefaultFlow.empty()){
-                defaultNetworkFlow = wsn.getMaxFlow();
+                defaultNetworkFlow = wsn.loadCachedMaxFlow();
                 for (DeliverySite *ds : wsn.getDeliverySites()){
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
@@ -482,7 +486,7 @@ void Interface::mainMenu() {
             if (p == nullptr){
                 break;
             }
-            double networkFlow = wsn.getMaxFlowWithoutStation(p);
+            double networkFlow = wsn.getMaxFlowWithoutStationBF(p);
             std::string title = "Max Flow without Pumping Station " + p->getCode();
             if (outputToFile) {
                 saveAllMaxFlowToFile(title);
@@ -498,7 +502,7 @@ void Interface::mainMenu() {
         }
         case 8:{
             if (cityToDefaultFlow.empty()){
-                defaultNetworkFlow = wsn.getMaxFlow();
+                defaultNetworkFlow = wsn.loadCachedMaxFlow();
                 for (DeliverySite *ds : wsn.getDeliverySites()){
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
@@ -572,7 +576,7 @@ void Interface::mainMenu() {
 
             bool process = pipeMenu();
             if (process){
-                double networkFlow = wsn.getMaxFlowWithoutPipes(selectedPipes);
+                double networkFlow = wsn.getMaxFlowWithoutPipesBF(selectedPipes);
                 std::string title = "Max Flow without Pipes";
                 if (outputToFile){
                     title.append(": ");
@@ -778,7 +782,6 @@ bool Interface::pipeMenu() {
                 break;
             }
             Pipe *p = wsn.findPipe(src->getCode(), dest->getCode());
-            wsn.hidePipe(p);
             selectedPipes.push_back(p);
             return pipeMenu();
         }
@@ -788,7 +791,7 @@ bool Interface::pipeMenu() {
     return false;
 }
 
-void Interface::datasetMenu() {
+bool Interface::datasetMenu() {
     initCapture();
     std::cout << HIDE_CURSOR;
     std::vector<std::string> options =
@@ -816,14 +819,11 @@ void Interface::datasetMenu() {
 
     switch (choice) {
         case 1:
-            wsn.parseData("../datasetLarge/Reservoir.csv","../datasetLarge/Stations.csv","../datasetLarge/Cities.csv","../datasetLarge/Pipes.csv");
-            break;
+            return wsn.parseData("../datasetLarge/Reservoir.csv","../datasetLarge/Stations.csv","../datasetLarge/Cities.csv","../datasetLarge/Pipes.csv");
         case 2:
-            wsn.parseData("../datasetSmall/Reservoirs_Madeira.csv","../datasetSmall/Stations_Madeira.csv","../datasetSmall/Cities_Madeira.csv","../datasetSmall/Pipes_Madeira.csv");
-            break;
+            return wsn.parseData("../datasetSmall/Reservoirs_Madeira.csv","../datasetSmall/Stations_Madeira.csv","../datasetSmall/Cities_Madeira.csv","../datasetSmall/Pipes_Madeira.csv");
         case 3:
-            wsn.parseData("../dataset/Reservoir.csv","../dataset/Stations.csv","../dataset/Cities.csv","../dataset/Pipes.csv");
-            break;
+            return wsn.parseData("../dataset/Reservoir.csv","../dataset/Stations.csv","../dataset/Cities.csv","../dataset/Pipes.csv");
         default:
             exitMenu();
     }

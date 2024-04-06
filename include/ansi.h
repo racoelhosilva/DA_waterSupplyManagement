@@ -1,3 +1,8 @@
+/**
+ * @file ansi.cpp
+ * @brief Creates a macro-based library for ANSI escape sequences
+ */
+
 #ifndef DA_WATERSUPPLYMANAGEMENT_ANSI_H
 #define DA_WATERSUPPLYMANAGEMENT_ANSI_H
 

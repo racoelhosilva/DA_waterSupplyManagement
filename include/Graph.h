@@ -6,30 +6,89 @@
 #include <unordered_map>
 #include "Vertex.h"
 
+/**
+ * @brief Hash table of vertices
+ * @tparam T Type of the vertices' information
+ */
 template <class T>
 using VertexSet = std::unordered_set<Vertex<T>*, VertexHash<T>, VertexHash<T>>;
 
+/**
+ * @brief Class that represents a generic graph
+ * @tparam T Type of the vertices' information
+ */
 template <class T>
 class Graph {
 public:
     /**
-     * @brief Constructor of the Graph class.
+     * @brief Constructor of the Graph class
      */
     Graph();
 
+    /**
+     * @brief Destructor of the Graph class
+     * @details Complexity: O(V*E), where V is the number of vertices and E the number of edges in the graph.
+     */
     virtual ~Graph();
 
+    /**
+     * @brief Finds a vertex in the graph
+     * @details Complexity: O(1).
+     * @param in Info of the vertex to search
+     * @return Reference to the vertex wanted, or nullptr of not found
+     */
     Vertex<T> *findVertex(const T &in) const;
 
+    /**
+     * @brief Adds a vertex to the graph if it does not exist in the graph
+     * @details Complexity: O(1).
+     * @param v Reference to the vertex to remove
+     * @return True if the vertex was successfully added, and false if it already exists
+     */
     bool addVertex(Vertex<T>* v);
+
+    /**
+     * @brief Removes the vertex with info in from the graph, as well as its related edges
+     * @details Complexity: O(E), where E is the number of edges in the graph.
+     * @param in Info of the vertex
+     * @return True if the vertex was successfully removed, and false if the vertex was not in the graph
+     */
     bool removeVertex(const T &in);
 
+    /**
+     * @brief Adds an edge from the vertex with info src to the vertex with info dest
+     * @details Complexity: O(1).
+     * @param src Info of the source vertex
+     * @param dest Info of the destination vertex
+     * @param w Weight of the edge
+     * @return True if the edge was successfully added, and false otherwise (if one of the vertices were not found)
+     */
     bool addEdge(const T &src, const T &dest, double w);
-    bool addEdge(Edge<T> *v);
+
+    /**
+     * @brief Removes the edges from the vertex with info src to the vertex with info dest
+     * @details Complexity: O(E1+E2), where E1 is the number of outgoing edges from the source vertex, and E2 is the number of
+     * incoming edges to the destination.
+     * @param src Info of the source vertex
+     * @param dest Info of the destination vertex
+     * @return True if an edge was removed successfully, and false otherwise
+     */
     bool removeEdge(const T &src, const T &dest);
+
+    /**
+     * @brief Adds a bidirectional edge between the vertices with infos src and dest
+     * @details Complexity: O(1).
+     * @param src Info of one vertex
+     * @param dest Info of the other vertex
+     * @param w Weight of the edge
+     * @return True if the edge was successfully added, and false otherwise
+     */
     bool addBidirectionalEdge(const T &src, const T &dest, double w);
 
-    int getNumVertex() const;
+    /**
+     * @brief Returns a set with all the vertices of the graph
+     * @return Set with the graph's vertices
+     */
     VertexSet<T> getVertexSet() const;
 
 private:
@@ -104,11 +163,6 @@ bool Graph<T>::addBidirectionalEdge(const T &src, const T &dest, double w) {
     e->setReverse(er);
     er->setReverse(e);
     return true;
-}
-
-template<class T>
-int Graph<T>::getNumVertex() const {
-    return vertexSet.size();
 }
 
 template<class T>

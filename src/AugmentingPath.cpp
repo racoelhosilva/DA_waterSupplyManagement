@@ -10,9 +10,9 @@ using namespace std;
 
 AugmentingPath::AugmentingPath(): capacity(numeric_limits<double>::infinity()), selected(false) {};
 
-void AugmentingPath::addPipe(Pipe *pipe, bool incoming) {
-    capacity = min(capacity, incoming ? pipe->getRemainingFlow() : pipe->getFlow());
-    pipes.emplace_back(pipe, incoming);
+void AugmentingPath::addPipe(Pipe *pipe, bool direct) {
+    capacity = min(capacity, direct ? pipe->getRemainingFlow() : pipe->getFlow());
+    pipes.emplace_back(pipe, direct);
 }
 
 const std::vector<std::pair<Pipe *, bool>> &AugmentingPath::getPipes() const {

@@ -7,11 +7,15 @@
 template <class T>
 class Vertex;
 
+/**
+ * @brief Class that represents an edge in a graph
+ * @tparam T Type of the info of the vertices that the edge connects
+ */
 template <class T>
 class Edge {
 public:
     /**
-     * @brief Constructor of the Edge lass
+     * @brief Constructor of the Edge class
      * @param orig Pointer to the origin vertex of the edge
      * @param dest Pointer to the destination vertex of the edge
      * @param weight The weight of the edge
