@@ -523,12 +523,7 @@ double WaterSupplyNetwork::getMaxFlowWithoutPipes(const std::vector<Pipe *> &pip
 }
 
 double WaterSupplyNetwork::getMaxFlowWithoutReservoir(Reservoir *reservoir) {
-    vector<Pipe*> pipes;
-    for (Pipe *pipe: reservoir->getAdj())
-        pipes.push_back(pipe);
-    for (Pipe *pipe: reservoir->getIncoming())
-        pipes.push_back(pipe);
-    return getMaxFlowWithoutPipes(pipes);
+    return getMaxFlowWithoutPipes(reservoir->getAdj());
 }
 
 double WaterSupplyNetwork::getMaxFlowWithoutStation(PumpingStation *station) {

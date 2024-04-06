@@ -3,3 +3,4 @@ cmake-build-debug
 .git
 __MACOSX
 *.DS_STORE
+docs/output/*

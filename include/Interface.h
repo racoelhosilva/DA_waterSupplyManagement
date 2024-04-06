@@ -156,6 +156,8 @@ public:
      */
     bool datasetMenu();
 
+    std::vector<ServicePoint *> getSortedServicePoints();
+
     /**
      * @brief Menu with the options that can be selected for a city
      * @return Pointer to the city selected by the user
