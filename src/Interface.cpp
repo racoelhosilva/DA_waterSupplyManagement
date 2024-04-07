@@ -380,7 +380,6 @@ void Interface::mainMenu() {
             break;
         }
         case 3:{
-            wsn.getMaxFlow();
             if (cityToDefaultFlow.empty()){
                 defaultNetworkFlow = wsn.loadCachedMaxFlow();
                 for (DeliverySite *ds : wsn.getDeliverySites()){
@@ -554,7 +553,7 @@ void Interface::mainMenu() {
         }
         case 9:{
             if (cityToDefaultFlow.empty()){
-                defaultNetworkFlow = wsn.getMaxFlow();
+                defaultNetworkFlow = wsn.loadCachedMaxFlow();
                 for (DeliverySite *ds : wsn.getDeliverySites()){
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
@@ -608,7 +607,7 @@ void Interface::mainMenu() {
         }
         case 10:{
             if (cityToDefaultFlow.empty()){
-                defaultNetworkFlow = wsn.getMaxFlow();
+                defaultNetworkFlow = wsn.loadCachedMaxFlow();
                 for (DeliverySite *ds : wsn.getDeliverySites()){
                     cityToDefaultFlow[ds->getCity()] = ds->getSupplyRate();
                 }
@@ -631,7 +630,7 @@ void Interface::mainMenu() {
             break;
         }
         case 11:{
-            wsn.getMaxFlow();
+            wsn.loadCachedMaxFlow();
             std::vector<std::tuple<double, double, double>> allMetrics;
             std::tuple<double, double, double> metrics;
             wsn.getMetrics(metrics);

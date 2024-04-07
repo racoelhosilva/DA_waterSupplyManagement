@@ -117,8 +117,9 @@ public:
 
     /**
      * @brief Loads the max flow cached in an auxiliary network, or calculates it and stores it if not previously ran
-     * @details Complexity: O(1) if cached, O(V*E^2) if not cached, where V is the number of vertices in the graph and E
-     * the number of edges.
+
+     * @details Complexity: O(D) if cached, O(V*E^2) if not cached, where D is the number of delivery sites, D is the
+     * number of vertices in the graph and E the number of edges.
      * @return The value of the max flow
      */
     double loadCachedMaxFlow();
@@ -127,8 +128,7 @@ public:
      * @brief Function to calculate the max flow without some of the pipes
      * @details It uses an optimized algorithm that reuses the previously calculated value of the max flow that tries to
      * remove the flows of augmenting paths to not run the Edmonds Karp from scratch again. Complexity: O(V*E^2), where
-     * V is the number of vertices in the graph and E the number of edges. In a pseudo-polynomial perspective, it has
-     * complexity O(E*f), where f is the difference between the current flow value and the maximum flow of the network.
+     * V is the number of vertices in the graph and E the number of edges.
      * @param pipes Vector of the pipes that shouldn't be considered
      * @return The max flow of the entire network
      */
@@ -136,9 +136,7 @@ public:
 
     /**
      * @brief Function to calculate the max flow without one of the reservoirs (optimized)
-     * @details Complexity: O(V*E^2), where V is the number of vertices in the graph and E the number of edges. In a
-     * pseudo-polynomial perspective, it has complexity O(E*f), where f is the difference between the current flow value
-     * and the maximum flow of the network.
+     * @details Complexity: O(V*E^2), where V is the number of vertices in the graph and E the number of edges.
      * @param reservoir Reservoir that shouldn't be considered
      * @return The max flow of the entire network
      */
@@ -146,9 +144,7 @@ public:
 
     /**
      * @brief Function to calculate the max flow without one of the pumping stations (optimized)
-     * @details Complexity: O(V*E^2), where V is the number of vertices in the graph and E the number of edges. In a
-     * pseudo-polynomial perspective, it has complexity O(E*f), where f is the difference between the current flow value
-     * and the maximum flow of the network.
+     * @details Complexity: O(V*E^2), where V is the number of vertices in the graph and E the number of edges.
      * @param station Pumping station that shouldn't be considered
      * @return The max flow of the entire network
      */
@@ -172,9 +168,7 @@ public:
 
     /**
      * @brief Function to calculate the max flow without one of the pumping stations (brute-force)
-     * @details Complexity: O(V*E^2), where V is the number of vertices in the graph and E the number of edges. In a
-     * pseudo-polynomial perspective, it has complexity O(E*f), where f is the difference between the current flow value
-     * and the maximum flow of the network.
+     * @details Complexity: O(V*E^2), where V is the number of vertices in the graph and E the number of edges.
      * @param station Pumping station that shouldn't be considered
      * @return The max flow of the entire network
      */
@@ -341,21 +335,20 @@ private:
      * @param sink Reference to the sink vertex
      * @return The augmenting path
      */
-    AugmentingPath reduceAugmentingPath(ServicePoint *source, ServicePoint* sink);
+    AugmentingPath *reduceAugmentingPath(ServicePoint *source, ServicePoint* sink);
 
     /**
      * @brief Subtracts the flow of the augmenting path from the network
      * @details It also selects the augmenting paths that pass through a pipe, if it becomes with a negative flow.
-     * Complexity: O(V) amortized (O(V*E) worst case), where V is the number of vertices in the graph and E the number
+     * Complexity: O(V) amortized (O(V^2*E) worst case), where V is the number of vertices in the graph and E the number
      * of edges.
      * @param augmentingPath Augmenting path to subtract
      */
-    void subtractAugmentingPath(const AugmentingPath& augmentingPath);
+    void subtractAugmentingPath(const AugmentingPath *augmentingPath);
 
     /**
      * @brief Subtracts the flow of all selected augmenting paths from the network
-     *
-     * @details Complexity: O(V*E), where V is the number of vertices in the graph and E the number of edges.
+     * @details Complexity: O(V^2*E), where V is the number of vertices in the graph and E the number of edges.
      */
     void subtractAugmentingPaths();
 
@@ -397,7 +390,7 @@ private:
     WaterSupplyNetwork *maxFlowNetwork;
     ServicePoint *superSource;
     ServicePoint *superSink;
-    std::vector<AugmentingPath> augmentingPaths;
+    std::vector<AugmentingPath*> augmentingPaths;
 };
 
 
