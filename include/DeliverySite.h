@@ -33,6 +33,7 @@ public:
 
     /**
      * @brief Returns the supply rate of the delivery site
+     * @details Complexity: O(n) where n is the number of incoming edges.
      * @return Supply rate of the delivery site in m^3/sec
      */
     double getSupplyRate() const;
