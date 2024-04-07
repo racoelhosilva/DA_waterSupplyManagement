@@ -118,7 +118,7 @@ public:
     /**
      * @brief Loads the max flow cached in an auxiliary network, or calculates it and stores it if not previously ran
 
-     * @details Complexity: O(D) if cached, O(V*E^2) if not cached, where D is the number of delivery sites, D is the
+     * @details Complexity: O(D) if cached, O(V*E^2) if not cached, where D is the number of delivery sites, V is the
      * number of vertices in the graph and E the number of edges.
      * @return The value of the max flow
      */
