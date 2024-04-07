@@ -3,6 +3,9 @@
 
 #include "WaterSupplyNetwork.h"
 
+/**
+ * @brief Class that represents the interface of the program
+ */
 class Interface {
 public:
 
