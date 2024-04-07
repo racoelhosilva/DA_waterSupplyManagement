@@ -108,8 +108,6 @@ protected:
     std::vector<Edge<T> *> adj;
     bool visited = false;
     bool processing = false;
-    unsigned int indegree;
-    double dist = 0;
     Edge<T> *path = nullptr;
 
     std::vector<Edge<T> *> incoming;
@@ -146,7 +144,7 @@ struct VertexHash {
 };
 
 template <class T>
-Vertex<T>::Vertex(T in): info(in), indegree(0) {}
+Vertex<T>::Vertex(T in): info(in) {}
 
 template<class T>
 Vertex<T>::~Vertex() = default;

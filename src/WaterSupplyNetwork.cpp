@@ -16,6 +16,8 @@ using namespace std;
 WaterSupplyNetwork::WaterSupplyNetwork() : maxFlowNetwork(nullptr), superSource(nullptr), superSink(nullptr) {};
 
 WaterSupplyNetwork::~WaterSupplyNetwork() {
+    for (AugmentingPath *augmentingPath: augmentingPaths)
+        delete augmentingPath;
     delete maxFlowNetwork;
 }
 
@@ -246,8 +248,8 @@ double WaterSupplyNetwork::getMaxFlow(bool saveAugmentingPaths) {
 double WaterSupplyNetwork::loadCachedMaxFlow() {
     double maxFlow = 0;
     if (maxFlowNetwork == nullptr) {
-        unhideAllPipes();
         unhideAllServicePoints();
+        unhideAllPipes();
         maxFlow = getMaxFlow(true);
         maxFlowNetwork = new WaterSupplyNetwork();
         copyGraph(this, maxFlowNetwork);
@@ -299,15 +301,17 @@ void WaterSupplyNetwork::edmondsKarp(ServicePoint *source, ServicePoint *sink, b
         if (!sink->isVisited())
             break;
 
-        AugmentingPath augmentingPath = reduceAugmentingPath(source, sink);
+        AugmentingPath* augmentingPath = reduceAugmentingPath(source, sink);
         if (savePaths) {
             augmentingPaths.push_back(augmentingPath);
-            for (auto pair: augmentingPaths.back().getPipes()) {
+            for (auto pair: augmentingPath->getPipes()) {
                 Pipe *pipe = pair.first;
-                pipe->getAugmentingPaths().push_back(&augmentingPaths.back());
+                pipe->getAugmentingPaths().push_back(augmentingPath);
                 if (pipe->getReverse() != nullptr)
-                    pipe->getReverse()->getAugmentingPaths().push_back(&augmentingPaths.back());
+                    pipe->getReverse()->getAugmentingPaths().push_back(augmentingPath);
             }
+        } else {
+            delete augmentingPath;
         }
     }
 }
@@ -355,35 +359,35 @@ void WaterSupplyNetwork::edmondsKarpBfs(ServicePoint *srcSp, ServicePoint *sinkS
     }
 }
 
-AugmentingPath WaterSupplyNetwork::reduceAugmentingPath(ServicePoint *source, ServicePoint *sink) {
+AugmentingPath *WaterSupplyNetwork::reduceAugmentingPath(ServicePoint *source, ServicePoint *sink) {
     ServicePoint *sp = sink;
-    AugmentingPath augmentingPath;
+    auto *augmentingPath = new AugmentingPath();
 
     while (sp->getCode() != source->getCode()) {
         Pipe *path = sp->getPath();
         bool incoming = *sp == *path->getDest();
-        augmentingPath.addPipe(path, incoming);
+        augmentingPath->addPipe(path, incoming);
         sp = incoming ? path->getOrig() : path->getDest();
     }
 
-    for (auto pair: augmentingPath.getPipes()) {
+    for (auto pair: augmentingPath->getPipes()) {
         Pipe *pipe = pair.first;
         bool incoming = pair.second;
-        pipe->setFlow(incoming ? pipe->getFlow() + augmentingPath.getCapacity() : pipe->getFlow() - augmentingPath.getCapacity());
+        pipe->setFlow(incoming ? pipe->getFlow() + augmentingPath->getCapacity() : pipe->getFlow() - augmentingPath->getCapacity());
         if (pipe->getReverse() != nullptr) {
-            pipe->getReverse()->setFlow(incoming ? pipe->getReverse()->getFlow() - augmentingPath.getCapacity() :
-                                        pipe->getReverse()->getFlow() + augmentingPath.getCapacity());
+            pipe->getReverse()->setFlow(incoming ? pipe->getReverse()->getFlow() - augmentingPath->getCapacity() :
+                                        pipe->getReverse()->getFlow() + augmentingPath->getCapacity());
         }
     }
 
     return augmentingPath;
 }
 
-void WaterSupplyNetwork::subtractAugmentingPath(const AugmentingPath& augmentingPath) {
-    for (auto pair: augmentingPath.getPipes()) {
+void WaterSupplyNetwork::subtractAugmentingPath(const AugmentingPath *augmentingPath) {
+    for (auto pair: augmentingPath->getPipes()) {
         Pipe *p = pair.first;
         bool incoming = pair.second;
-        double flowToRemove = augmentingPath.getCapacity();
+        double flowToRemove = augmentingPath->getCapacity();
         p->setFlow(incoming ? p->getFlow() - flowToRemove : p->getFlow() + flowToRemove);
         if (p->getReverse() != nullptr) {
             p->getReverse()->setFlow(incoming ? p->getReverse()->getFlow() + flowToRemove :
@@ -395,16 +399,16 @@ void WaterSupplyNetwork::subtractAugmentingPath(const AugmentingPath& augmenting
 }
 
 void WaterSupplyNetwork::subtractAugmentingPaths() {
-    for (const AugmentingPath &augmentingPath: augmentingPaths) {
-        if (!augmentingPath.isSelected())
+    for (const AugmentingPath *augmentingPath: augmentingPaths) {
+        if (!augmentingPath->isSelected())
             continue;
         subtractAugmentingPath(augmentingPath);
     }
 }
 
 void WaterSupplyNetwork::unselectAllAugmentingPaths() {
-    for (AugmentingPath &augmentingPath: augmentingPaths)
-        augmentingPath.setSelected(false);
+    for (AugmentingPath *augmentingPath: augmentingPaths)
+        augmentingPath->setSelected(false);
 }
 
 void WaterSupplyNetwork::unhideAllServicePoints() {
@@ -507,8 +511,7 @@ void WaterSupplyNetwork::loadNetwork() {
 }
 
 double WaterSupplyNetwork::getMaxFlowWithoutPipes(const std::vector<Pipe *> &pipes) {
-    unhideAllPipes();
-    getMaxFlow(true);
+    loadCachedMaxFlow();
     unselectAllAugmentingPaths();
 
     for (Pipe *pipe: pipes) {
@@ -554,8 +557,8 @@ double WaterSupplyNetwork::getMaxFlowWithoutStationBF(PumpingStation* station) {
 }
 
 std::vector<Pipe *> WaterSupplyNetwork::getCriticalPipesToCity(DeliverySite *city) {
-    unhideAllPipes();
-    getMaxFlow(true);
+    loadCachedMaxFlow();
+    unselectAllAugmentingPaths();
 
     std::vector<Pipe *> possiblePipes, res;
 

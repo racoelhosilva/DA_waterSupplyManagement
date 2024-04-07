@@ -1,3 +1,8 @@
+### Running the Project
+
+If the project is being run in the CLion terminal, make sure the option "Emulate terminal in output console" is enabled
+in the Run/Debug configurations. This is necessary for capturing inputs for our program.
+
 ### Using custom Datasets
 
 Custom Datasets can be used in the project. To use them follow these instructions:
