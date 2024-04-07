@@ -389,8 +389,6 @@ void WaterSupplyNetwork::subtractAugmentingPath(const AugmentingPath *augmenting
         bool incoming = pair.second;
         double flowToRemove = augmentingPath->getCapacity();
         p->setFlow(incoming ? p->getFlow() - flowToRemove : p->getFlow() + flowToRemove);
-        if (p->getOrig()->getCode() == "R_4")
-            cout << " ";
         if (p->getReverse() != nullptr) {
             p->getReverse()->setFlow(incoming ? p->getReverse()->getFlow() + flowToRemove :
                                      p->getReverse()->getFlow() - flowToRemove);
