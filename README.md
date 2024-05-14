@@ -1,9 +1,8 @@
-<h1 align="center">BD - Airport Management</h1>
+<h1 align="center">DA - Water Supply Management</h1>
 
 ><p align="center">
 > Calculate the water flows in a complex graph network with Reservoirs, Pumping Stations and Delivery Sites
 ></p>
-
 
 ### Running the Project
 
