@@ -35,4 +35,5 @@ $ tree dataset/
 
 > Class: 2LEIC15 Group: G02  
 > Final Grade: 20.0  
+> Professors: Liliana Ferreira  
 > Created in March 2024 for DA (Desenho de Algoritmos) [FEUP-L.EIC016]  
